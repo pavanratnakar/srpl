@@ -2,16 +2,16 @@ x * tests via yuitest/grover/phantomjs
 x * deploy locally with comboserver
 x * templating engines supported: ejs (eventually - handlebars, etc)
 
-x myc --setup				(one time only - install dependencies and/or make stubs)
-x myc --server
-x myc --build
-x myc --lint
-x myc --tests
-x myc --create @module@
-x myc --templates
-myc --docs
+x srpl --setup				(one time only - install dependencies and/or make stubs)
+x srpl --server
+x srpl --build
+x srpl --lint
+x srpl --tests
+x srpl --create @module@
+x srpl --templates
+srpl --docs
 
-myc --mobify
+srpl --mobify
 
 
 
@@ -48,15 +48,15 @@ you can install node in one of many ways
 - you're now good to run tests/lint
 
 *get the source*
-- if you're reading this, you probably have it. else - svn co $ > svn+ssh://svn.corp.yahoo.com/yahoo/properties/maps/trunk/myc
+- if you're reading this, you probably have it. else - svn co $ > svn+ssh://svn.corp.yahoo.com/yahoo/properties/maps/trunk/srpl
 
 
 *setup* 
-- $ > cd myc
+- $ > cd srpl
 - $ > npm install
 
 *that's it!*
-- to see all available options, $ > node scripts/myc-js --help 
+- to see all available options, $ > node scripts/srpl-js --help 
 
 
 todo - filesystem fixes.

@@ -1,0 +1,13 @@
+.srpl-gallery li{
+    padding:            0 0.5em;
+    display:            inline;
+    float:              left;
+}
+
+.srpl-gallery li img{
+	height:				128px;
+	width:				128px;
+}
+
+/* YUI CSS Detection Stamp */
+#yui3-css-stamp.srpl-business-gallery-css { display: none; }

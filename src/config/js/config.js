@@ -56,19 +56,9 @@ YUI.add('srpl-config', function(Y){
             gwsServer: 'http://gws2.maps.yahoo.com',
             local_count:10
         },
-        businesses:{
-            domain : '', // relative
-            hiConf : true,
-            pageNumber : 1,
-            hiConfCheckNumber : 5,
-            ads : true,
-            searchTerm : ' near ',
-            percentBeforeRequery : 33
+        business:{
+            galleryCount : 4
         },
-        // http://wiki.corp.yahoo.com/view/GlobalMapsFE/srplSpaceId
-        // http://i13n.corp.yahoo.com/wizard/
-        // http://i13n.corp.yahoo.com/urlmap/?spaceid=1197116579&lookupsidbutton=Lookup+Spaceid
-        // /site/maps/consumer/newmaps_one
         tracking:{
             enable: false,
             comscore : true,

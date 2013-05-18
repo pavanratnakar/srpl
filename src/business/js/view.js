@@ -65,7 +65,6 @@ YUI.add('srpl-business-view', function(Y){
                 b : b
             }));
             headerHeight = t.get('container').one('.srpl-header').get('offsetHeight');
-            Y.log(headerHeight);
             node.one('img.hero').setStyle('height',headerHeight);
             t.set('map',new Y.srpl.Map({
                 'height' : headerHeight,
@@ -119,6 +118,7 @@ YUI.add('srpl-business-view', function(Y){
         'srpl-business-css',
         'srpl-lib-css',
         'srpl-business-hero-css',
+        'srpl-business-gallery-css',
         'srpl-config'
     ]
 });

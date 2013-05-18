@@ -123,8 +123,6 @@ html[xmlns] .srpl .clearfix {
     padding:            0 0.692em;
     display:            inline;
     float:              left;
-    vertical-align:     middle;
-    position:           relative;
 }
 
 .srpl .actions button:focus,

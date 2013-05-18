@@ -51,7 +51,8 @@ YUI.add('srpl-business-model', function(Y){
         "website" : null,
         "websitelabel" : null,
         "zip" : null,
-        "ycatsprimary" : null
+        "ycatsprimary" : null,
+        "latestreview" : null
     };
 
     Business.NAME = 'business';

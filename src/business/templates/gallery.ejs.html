@@ -1,11 +1,13 @@
 <% if (b.get('thumbnail_photos') && b.get('thumbnail_photos').count) { %>
-	<div class="srpl-container">
-	    <ul class="srpl-gallery">
-	    <% Y.each(b.get('thumbnail_photos').photo, function(p,i){ %>
-	        <li>
-	            <img src="<%= p.thumb.url %>" alt="<%= b.displayValue() %>"/>
-	        </li>
-	    <% }); %>
-	    </ul>
-	</div>
+    <div class="srpl-container">
+        <ul class="srpl-gallery">
+        <%
+        var photos = b.get('thumbnail_photos').photo.slice(0,Y.srpl.config('business.galleryCount'));
+        Y.each(photos, function(p,i){ %>
+            <li>
+                <img src="<%= p.thumb.url %>" alt="<%= b.displayValue() %>"/>
+            </li>
+        <%}); %>
+        </ul>
+    </div>
 <% }%>
