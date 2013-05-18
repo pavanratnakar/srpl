@@ -1,0 +1,765 @@
+/**
+ * Create a new myc-map view class that extends Y.View and renders the current
+ * @module myc-map-view
+ * @requires
+ *  view,
+    myc-ymaps,
+    myc-markers,
+    myc-map-css,
+    myc-config,
+    myc-traffic-plugin,
+    myc-flickr-plugin
+*/
+YUI.add('myc-map-view', function(Y){
+
+    var __ = function(str){
+        return {
+            valueFn: function(){
+                return Y.myc.config(str);
+            }
+        };
+    };
+
+    var MapView = function(config){
+        MapView.superclass.constructor.apply(this, arguments);
+    };
+
+    // Attributes and static properties for myc-map
+    MapView.ATTRS = {
+        container:          null,
+        zoom:               __('ymaps.zoom'),
+        pan:                __('ymaps.pan'),
+        scale:              __('ymaps.scale'),
+        keyboard:           __('ymaps.keyboard'),
+        mouse:              __('ymaps.mouse'),
+        trafficControl:     __('ymaps.trafficControl'),
+        mapTypeControl:     __('ymaps.mapTypeControl'),
+        mapType : {
+            setter : function(v) {
+                if (v !== this.map.get('type').name.substring(0,1).toLowerCase()) {
+                    this.map.set('type',this.map.getValidType(v));
+                }
+            }
+        },
+        traffic : {
+            setter : function(v) {
+                if (this.map.get('showTraffic') !== v) {
+                    this.map.set('showTraffic',v);
+                }
+            }
+        },
+        width:              null,
+        height:             null,
+        lat:                __('ymaps.center.latitude'),
+        lon:                __('ymaps.center.longitude'),
+        zoomLevel:          __('ymaps.zoomLevel'),
+        controls:           __('ymaps.controls'),
+        isPrintPage:        __('ymaps.isPrintPage'),
+        state: {
+            getter: function(){
+                var t = this,
+                    o = {},
+                    mapType = t.map.get('type').name.substring(0,1).toLowerCase();
+
+                if (t.map.get('showTraffic') !== Y.myc.config('ymaps.traffic')) {
+                    o.trf = Y.myc.util.urlsafe(t.map.get('showTraffic'));
+                }
+                if (mapType !== Y.myc.config('ymaps.mapType')) {
+                    o.t = mapType;
+                }
+                o.bb = t.map.get('bb');
+                o.lat = t.map.get('center').get('lat');
+                o.lon = t.map.get('center').get('lon');
+                return o;
+            }
+        }
+    };
+
+    MapView.NAME = 'mapView';
+    MapView.NS = 'map';
+
+    Y.extend(MapView, Y.View, {
+        eventListeners : [],
+        map : null,
+        previousMapCenter : null,
+        /**
+        * The initializer function will run when a view is instantiated
+        * set maps attrs
+        * create ymaps map object
+        * map events
+        * @method initializer
+        * @return {void}
+        */
+        initializer: function(config){
+            var t = this, zoom;
+
+            t.eventListeners = [];
+
+            Y.YMaps.init({
+                appid: Y.myc.config('ymaps.appid')
+            });
+
+            if (config.bb) {
+                var pieces = Y.Array.map(config.bb.split(','), function(p){ return parseFloat(p,10); });
+
+                var tl = new Y.YMaps.GeoLocation({
+                    lat: pieces[0],
+                    lon: pieces[1]
+                });
+                var br = new Y.YMaps.GeoLocation({
+                    lat: pieces[2],
+                    lon: pieces[3]
+                });
+
+                var zoomLevel = Y.myc.util.computeBestZoomWithPadding({
+                    tl:tl,
+                    br:br,
+                    height:config.height,
+                    width:config.width,
+                    padding:0
+                });
+            }
+
+            if (config.adjustForSidebar) {
+                // Adjust for the sidebar, as the sidebar would be in a maximized state
+                var proj = new Y.YMaps.Projection({zoomLevel: config.zoomLevel || zoomLevel || 10});
+                config.lon = config.lon - (Y.myc.config('ymaps.leftRailOffset') / 2)/proj.get('pixelsPerLon');
+            }
+
+            t.map = new Y.myc.YMap({
+                boundingBox: config.container,
+                center:      t.getGeo(config.lat, config.lon),
+                height:      config.height,
+                width:       config.width,
+                showTraffic: config.traffic,
+                controls:    config.controls || false,
+                zoomLevel:   config.zoomLevel || zoomLevel || 10,
+                animatedTransitions: Y.myc.config('ymaps.animatedTransitions')
+            }).
+                plug(Y.myc.Plugin.Markers).
+                plug(Y.myc.Plugin.Traffic,{
+                    container: config.container
+                }).
+                plug(Y.myc.Plugin.Flickr);
+
+            t.initEvents();
+            t.initTraffiEvents();
+        },
+        /**
+        * events specific to myc-map
+        * @method events
+        * @return {void}
+        */
+        initEvents : function(){
+            var t=this,
+                updateAssistEvents = ['renderComplete','centerChangeForUser', 'centerChange'],
+                mapBeforeListeners,
+                mapListeners,
+                mapAfterListeners,
+                dblClickHandlers;
+
+            t.map.addTarget(t);
+            // update lat lon for search assist
+            for (var i=0; i<updateAssistEvents.length; i++) {
+                t.map.after(updateAssistEvents[i], function(e){
+                    t.fire('myc:update:latlon',{'oEvent:':e});
+                });
+            }
+
+            mapBeforeListeners = t.map.before({
+                'onDrag': function(e){
+                    t.fire('map:onDrag:drag', e);
+                }
+            });
+            t.eventListeners.push(mapBeforeListeners);
+
+            mapListeners = t.map.on({
+                'ymapcontextmenu': function(e){
+                    t.fire('map:contextmenu:click', e);
+                },
+                'click': function(e){
+                    t.fire('map:click', e);
+                },
+                'blur': function(e){
+                    t.fire('map:blur', e);
+                },
+                'centerChangeForUser': function(e){
+                    var change;
+                    if (t.previousMapCenter) {
+                        change = t.map.checkCenterChangeByPercentage(t.previousMapCenter);
+                    }
+                    if (change) {
+                        t.setPreviousCenter();
+                        t.fire('centerChangeByPercentage',{
+                            'latitude' : change.lat,
+                            'longitude' : change.lon
+                        });
+                        if (t.map.flickr.get('active')) {
+                            t.showFlickrCarosuel({
+                                type : 'panning',
+                                dx : e.dx,
+                                dy : e.dy
+                            });
+                        }
+                    }
+                }
+            });
+            t.eventListeners.push(mapListeners);
+
+            mapAfterListeners = t.map.after({
+                'endDrag': function(e){
+                    Y.wait(200).then(function(){t.fire('user:pan');});
+                },
+                'centerChangeForUser': function(e){
+                    t.fire('map:centerChangeForUser', e);
+                },
+                'renderComplete': function(e){
+                    t.map.setControls({
+                        pan:            t.get('pan'),
+                        zoom:           t.get('zoom'),
+                        scale:          t.get('scale'),
+                        keyboard:       t.get('keyboard'),
+                        mouse:          t.get('mouse'),
+                        trafficControl: t.get('trafficControl'),
+                        mapTypeControl: t.get('mapTypeControl'),
+                        isPrintPage:    t.get('isPrintPage')
+                    });
+                    t.setPreviousCenter();
+                }
+            });
+            t.eventListeners.push(mapAfterListeners);
+
+            Y.each(['user:pan', 'user:zoom'], function(evt){
+                t.map.after(evt, function(){
+                    Y.wait(200).then(function(){t.fire('map:' + evt, evt);});
+                });
+            });
+
+            Y.each(['photo:hover', 'photo:out', 'photo:click'], function(evt){
+                t.map.flickr.on(evt, function(e){
+                    t.fire('flickr:' + e.type, e);
+                });
+            });
+
+            dblClickHandlers = t.map.get('body').before('dblclick',function(e){
+                if (e.target.ancestor('.ymap-markersBody') || e.target.ancestor('.yui3-scalebar') || e.target.ancestor('.myc-traffic-legend')) {
+                    e.halt(true);
+                }
+            });
+            t.eventListeners.push(dblClickHandlers);
+        },
+        /**
+        * @method setPreviousCenter
+        * @return {void}
+        */
+        setPreviousCenter: function(){
+            this.previousMapCenter =  this.getMapCenter();
+        },
+        /**
+        * @method initTraffiEvents
+        * @return {void}
+        */
+        initTraffiEvents: function(){
+            var t = this,
+                trafficReset,
+                trafficRender;
+
+            trafficReset = t.map.traffic.on('reset', function(e) {
+                t.removeMarkers({
+                    type: 'traffic'
+                });
+            });
+            t.eventListeners.push(trafficReset);
+
+            trafficRender = t.map.traffic.on('render', function(e){
+                Y.each(t.map.traffic.get('incidentList').toArray(), function(incident, index) {
+                    t.addMarker(incident, {
+                        color: 'traffic'+incident.get('Severity')
+                    });
+                });
+            });
+            t.eventListeners.push(trafficRender);
+        },
+        /**
+        * @method initLoadTraffic
+        * @retrun void
+        */
+        initLoadTraffic: function(){
+            this.map.traffic.query();
+        },
+        /**
+        * Geo geo object for given lat and lon
+        * @method getGeo
+        * @param {lat} lat
+        * @param {lon} lon
+        * @return {geo}
+        */
+        getGeo : function(lat, lon){
+            return new Y.YMaps.GeoLocation({
+                lat : parseFloat(lat, 10),
+                lon : parseFloat(lon, 10)
+            });
+        },
+        /**
+        * get myc-map zoom level
+        * @method getZoomLevel
+        * @return {int} zoomLevel
+        */
+        getZoomLevel : function(){
+            return this.map.get('zoomLevel');
+        },
+        /**
+        * set myc-map zoom level
+        * @method setZoomLevel
+        * @param zoomLevel {int} zoomLevel
+        * @return {void}
+        */
+        setZoomLevel : function(zoomLevel){
+            this.map.set('zoomLevel',parseInt(zoomLevel,10));
+        },
+        /**
+        * resize myc-map and recenter
+        * @method resize
+        * @param dimensions.height {int} height - optional
+        * @param dimensions.width {inr} width - optional
+        * @return {void}
+        */
+        resize : function(dimensions){
+            var prevCenter = this.getMapCenter();
+            if (dimensions.height) {
+                this.set('height',dimensions.height);
+                this.get('container').set('height',this.get('height'));
+                this.map.set("height", this.get('height'));
+            }
+            if (dimensions.width) {
+                this.set('width',dimensions.width);
+                this.get('container').set('width',this.get('width'));
+                this.map.set("width", this.get('width'));
+            }
+            // [bug 6004009] calling internal method for time being.
+            // ToDo: Once MAC support this, need to revert this
+            //this.map.syncUI();
+            this.map._onWindowResize();
+            this.map.set("center", prevCenter);
+            this.map.fire('redraw');
+        },
+        /**
+        * @method getCenter
+        * @return {object} lat,lon
+        */
+        getCenter : function(){
+            return {
+                latitude : this.map.get('center').get('lat'),
+                longitude : this.map.get('center').get('lon')
+            };
+        },
+        /**
+        * @method getMapCenter
+        * @return {object} map center
+        */
+        getMapCenter : function(){
+            return this.map.get('center');
+        },
+        /**
+        * @method getRadiusInMiles
+        * @return {number} radius
+        */
+        getRadiusInMiles : function(){
+            var map = this.map;
+            var radiusPx = Math.min(map.get('height') / 2, map.get('width') / 2);
+            // Using 80% of the viewport radius to avoid markers on the edges
+            var radius = parseInt(map.get('projection').get('metersPerPixel') * radiusPx * Y.myc.config('ymaps.activeRadius'), 10);
+            // converting in miles as the radius is in meters
+            return (radius/1609.34);
+        },
+        /**
+        * Center myc-map
+        * @method centerMap
+        * @param lat {lat/object} lat or geo object
+        * @param lat {lon}
+        * @return {void}
+        */
+        center : function(lat, lon, e){
+            e = e || {};
+            var t = this;
+            t.map.render(function(){
+                if (Y.Lang.isObject(lat) && !(t.map.get('center').get('lat') === lat.get('lat') && t.map.get('center').get('lon') === lat.get('lon'))) {
+                    t.map.set('center', lat);
+                } else if (lat && lon) {
+                    t.map.set('center',t.getGeo(lat,lon));
+                }
+                if (e.previousCenter !== false) {
+                    t.setPreviousCenter();
+                }
+            });
+        },
+        /**
+        * zoom map to defined value
+        * based on current map zoom level
+        * @method zoomBoost
+        * @return {void}
+        */
+        zoomBoost : function(){
+            var zoomBoostFactorArray = {
+                1  :  5,
+                2  :  5,
+                3  :  5,
+                4  :  5,
+                5  :  4,
+                6  :  4,
+                7  :  4,
+                8  :  3,
+                9  :  3,
+                10 :  3,
+                11 :  3,
+                12 :  1,
+                13 :  1,
+                14 :  1,
+                15 :  1,
+                16 :  1,
+                17 :  1,
+                18 :  1,
+                19 :  1
+            };
+            if (this.map.get('zoomLevel') < 20) {
+                this.map.set('zoomLevel',this.map.get('zoomLevel') + zoomBoostFactorArray[this.map.get('zoomLevel')]);
+            }
+        },
+        /**
+        * center myc-map to bounding box
+        * @method centerToBBox
+        * @param data.tl {object} top left geo object
+        * @param data.br {object} bottom right geo object
+        * @return {void}
+        */
+        centerToBBox : function(data, margin){
+            Y.log('Map View : centerToBBox called');
+            var t = this;
+            t.map.render(function(){
+                if (!(data.tl.get('lat') === data.br.get('lat') && data.tl.get('lon') === data.br.get('lon'))) {
+                    margin = margin || 0;
+                    t.map.zoomToFitBBox(data.tl,data.br, margin);
+                    // As a part of the re-centering we are seeing that the markers loose the location and move with the map
+                    // So firing a redraw to ensure that we are in sync
+                    t.center(Y.myc.util.getCenterForBBox(data));
+                    t.map.fire('redraw');
+                    t.setPreviousCenter();
+                } else {
+                    t.map.set('zoomLevel',Math.max(t.map.get('zoomLevel'), Y.myc.config('ymaps.zoomThresholdLevel')));
+                    t.center(data.tl);
+                }
+            });
+        },
+        /**
+        * zoom myc-map to lat,lon and zoomLevel
+        * @method zoomToLatLon
+        * @param data.lat - lat
+        * @param data.lon - lon
+        * @param data.zoomLevel - zoom
+        * @return {void}
+        */
+        zoomToLatLon : function(data){
+            var geo = new Y.YMaps.GeoLocation({
+                lat : parseFloat(data.lat, 10),
+                lon : parseFloat(data.lon, 10)
+            });
+            this.map.set('previousCenter',geo);
+            this.map.set('center', geo);
+            this.map.set('zoomLevel', data.zoomLevel);
+            this.setPreviousCenter();
+        },
+        /**
+        * zooms in/out keeping the passed location at the same place in the view
+        * @method zoomAtLocation
+        * @return {void}
+        */
+        zoomAtLocation : function(location, inOut){
+            var t = this,
+                currentZoom = t.map.get('zoomLevel'),
+                newLocation,
+                offset,
+                toLevel;
+
+            offset = t.map.get('center').getDeltaXy(location , currentZoom);
+            offset.y *= -1;
+
+            if (inOut === 'in'){
+                toLevel = currentZoom + 1;
+            } else {
+                toLevel = currentZoom - 1;
+            }
+
+            // check for min/max zoom
+            if (toLevel < 1 || toLevel > 20) {
+                return;
+            }
+
+            newLocation = t.map._updateGeoLocationAtGivenZoom(location, offset, toLevel);
+
+            t.map.setAttrs({
+                'center': newLocation,
+                'zoomLevel': toLevel
+            });
+        },
+        /**
+        * draw objects on myc-map
+        * @method remove
+        * @return {void}
+        */
+        draw : function(object){
+            var t = this;
+            t.map.render(function(){
+                t.map.draw(object);
+            });
+        },
+        /**
+        * remove objects from myc-map
+        * @method remove
+        * @return {void}
+        */
+        remove : function(object){
+            var t = this;
+            t.map.render(function(){
+                if (object) {
+                    if(object instanceof Y.YMaps.RouteUI) {
+                        object.fire("route:routeReset");
+                    }
+                    t.map.remove(object);
+                }
+            });
+        },
+        /**
+        * add marker method for myc-map
+        * encapsulation of add marker
+        * @method addMarker
+        * @return {void}
+        */
+        addMarker : function(type,properties){
+            var t = this;
+            t.map.render(function(){
+                t.map.markers.add(type,properties);
+            });
+        },
+        /**
+        * markers remove method for myc-map
+        * encapsulation of marker remove
+        * @method removeMarkers
+        * @return {void}
+        */
+        removeMarkers : function(data){
+            var t = this;
+            t.map.render(function(){
+                if (data && data.type === "disambiguate") {
+                    t.map.markers.removeDisambiguateMarkers();
+                } else if (data && data.type === "traffic") {
+                    t.map.markers.removeTrafficMarkers();
+                } else if (data && data.type === "onlyBusinesses") {
+                    t.map.markers.removeBusinessMarkers();
+                } else {
+                    t.map.markers.clear();
+                }
+            });
+        },
+        /**
+        * marker hover handle method for myc-map
+        * encapsulation of marker hover
+        * @method markerHover
+        * @return {void}
+        */
+        markerHover : function(location){
+            this.map.markers.handleHover(location);
+        },
+        /**
+        * marker hover out handle method for myc-map
+        * encapsulation of marker hover out
+        * @method markerHoverOut
+        * @return {void}
+        */
+        markerHoverOut : function(location){
+            this.map.markers.handleHoverOut(location);
+        },
+        /**
+        * marker click handle method for myc-map
+        * encapsulation of marker click
+        * @method markerClick
+        * @return {void}
+        */
+        markerClick : function(location){
+            var m = this.map.markers.find(location),
+                change;
+            if (m.get('isDetailViewShown')) {
+                m.unfocus();
+                m.hideDetailView();
+                this.center(location.geo(), null, {previousCenter: false});
+            } else {
+                if (location.get('boundingbox')) {
+                    this.centerToBBox({
+                        tl : location.tl(),
+                        br : location.br()
+                    });
+                }
+                this.center(location.geo(),null,{
+                    previousCenter : false
+                });
+                this.map.markers.markerHoverToClick(m);
+                if (this.previousMapCenter) {
+                    change = this.map.checkCenterChangeByPercentage(this.previousMapCenter);
+                }
+                if (change) {
+                    this.setPreviousCenter();
+                }
+                this.fire('centerChangeDueToValidUserInteraction',{
+                    'changeByValidPercentage' : change ? true : false,
+                    'type' : m.get('type')
+                });
+            }
+        },
+        /**
+        * remove marker for myc-map
+        * @method removeMarker
+        * @return {void}
+        */
+        removeMarker : function(location){
+            var m = this.map.markers.find(location);
+            if (m) {
+                this.remove(m);
+                this.map.markers.remove(location);
+            }
+        },
+        /**
+        * add current location marker method for myc-map
+        * @method addCurrlocMarker
+        * @return {void}
+        */
+        addCurrlocMarker : function(currloc){
+            this.map.markers.addCurrlocMarker(currloc);
+        },
+        /**
+        * remove current location marker method for myc-map
+        * @method removeCurrlocMarker
+        * @return {void}
+        */
+        removeCurrlocMarker : function(){
+            this.map.markers.removeCurrlocMarker();
+        },
+        /**
+         * render method handle for myc-map
+         * @method render
+         * @return {void}
+        */
+        render : function(){
+            this.map.render.apply(this.map, arguments);
+        },
+        /**
+        * @method destructor
+        * @return {void}
+        */
+        destructor : function(){
+            this.eventListeners = Y.myc.util._destructor(this.eventListeners);
+        },
+        /**
+        * @method isAnyBusinessMarkerActive
+        * @return {void}
+        */
+        isAnyBusinessMarkerActive: function(){
+            return this.map.markers.isAnyBusinessMarkerActive();
+        },
+        /**
+        * @method showFlickrMarker
+        * @return {void}
+        */
+        showFlickrMarker: function(id){
+            var t = this,
+                m = t.map.markers.find(id);
+
+            t.center(m.get('location').geo());
+            t.map.markers.markerHoverToClick(m,{
+                readjust : false
+            });
+            // extracted code directly from mac - used to pan map so that marker is visible
+            t.map.updateCenter({
+                x  : 0,
+                y : (-1)*(t.map.flickr.get('container').get('offsetHeight')-40)
+            });
+        },
+        /**
+        * @method showFlickrCarosuel
+        * @return {void}
+        */
+        showFlickrCarosuel: function(e){
+            this.map.flickr.show(e);
+        },
+        /**
+        * @method hideFlickrCarosuel
+        * @return {void}
+        */
+        hideFlickrCarosuel: function(e){
+            this.map.flickr.hide();
+        },
+        getVirtualBBox: function(bbox_string, leftOnly){
+            var bb = Y.Array.map(bbox_string.split(','), function(l){ return parseFloat(l, 10);}),
+                deltaLon = (Y.myc.config('ymaps.leftRailOffset') / 2)/(this.map.get('projection').get('pixelsPerLon'));
+
+            if (leftOnly) {
+                bb[1] = bb[1] + (2 * deltaLon);
+            } else {
+                bb[1] = bb[1] + deltaLon;
+                bb[3] = bb[3] - deltaLon;
+            }
+            return bb.join(",");
+        },
+        /**
+        * @method adjustMapForLeftRail
+        * @param {boolean} shiftLeft
+        * @param {boolean} updateState
+        * @return {void}
+        */
+        adjustMapForLeftRail: function(shiftLeft,updateState){
+            var deltaLon = (Y.myc.config('ymaps.leftRailOffset') / 2)/(this.map.get('projection').get('pixelsPerLon'));
+            if (shiftLeft) {
+                this.center(this.map.get('center').get('lat'), this.map.get('center').get('lon') - deltaLon);
+            } else {
+                this.center(this.map.get('center').get('lat'), this.map.get('center').get('lon') + deltaLon);
+            }
+            this.fire('map:mapCenterAdjusted',{
+                updateState : updateState
+            });
+        },
+        updateCenterForLeftRail: function(center){
+            if (center.latitude) {
+                center.longitude = center.longitude + ((Y.myc.config('ymaps.leftRailOffset') / 2) / this.map.get('projection').get('pixelsPerLon'));
+            } else {
+                center.lon = center.lon + ((Y.myc.config('ymaps.leftRailOffset') / 2) / this.map.get('projection').get('pixelsPerLon'));
+            }
+            return center;
+        },
+        getVirtualCenter: function(){
+            var deltaLon = (Y.myc.config('ymaps.leftRailOffset') / 2)/(this.map.get('projection').get('pixelsPerLon'));
+            return new Y.YMaps.GeoLocation({
+                lat: this.map.get('center').get('lat'),
+                lon: this.map.get('center').get('lon') + deltaLon
+            });
+        },
+        /**
+        * @method clear
+        * @return {void}
+        */
+        clear: function(e){
+            this.previousMapCenter = null;
+        }
+    });
+
+    Y.namespace('myc.Map');
+    Y.myc.Map.View = MapView;
+
+}, '@VERSION@',{
+    requires:[
+        'view',
+        'myc-ymaps',
+        'myc-markers',
+        'myc-map-css',
+        'myc-config',
+        'myc-traffic-plugin',
+        'myc-flickr-plugin'
+    ]
+});

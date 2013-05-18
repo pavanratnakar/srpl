@@ -1,0 +1,302 @@
+YUI.add('myc-config', function(Y){
+
+    var config = {
+        env:{
+            intl:'en-US',
+            lang: 'en-US',
+            locale: 'en-US',
+            countrycode: 'US', // required for locations
+            version:YUI.version,
+            cdnBase:'http://l.yimg.com/na/',
+            combine: false,
+            debug: true,
+            country : 'United States'
+        },
+        ymaps:{
+            appid: 'ymapsaura2',
+            center: {
+                'latitude' : '37.371609',
+                'longitude' : '-122.038254'
+            },
+            zoomLevel: 10,
+            pan : true,
+            zoom : true,
+            scale : true,
+            keyboard : true,
+            mouse : true,
+            trafficControl: true,
+            mapTypeControl : true,
+            controls : false,
+            isPrintPage : false,
+            traffic : false,
+            flickr : false,
+            mapType : 'm',
+            minZoom : 1,
+            maxZoom : 20,
+            percentBeforeRequery : 50,
+            activeRadius : 0.75, // ratio of usable map radius to use for business queries - to prevent markers at edge of map
+            zoomThresholdLevel : 16,
+            defaultView : 'm',
+            leftRailOffset : 360, // Using a constant value for now, will try to figure out something better
+            animatedTransitions : true // default true. Override it if required
+        },
+        transisition : {
+            duration : 1,
+            easing : 'ease-in-out',
+            delay : 0
+        },
+        containers : {
+            uh3 : '#yucs',
+            uh2 : '#yUnivHead',
+            sidebar : '#myc-sidebar-content',
+            location : '#myc-location',
+            business : '#myc-business',
+            directions : '#myc-directions',
+            map : '#myc-map',
+            uh3_onebox : '#yucs-search',
+            uh2_onebox : '#myc-one-box-search',
+            aria : '#myc-aria-container',
+            error : '#myc-error-container',
+            loader : '#myc-loader-container',
+            contextMenu : '#context-menu',
+            currentLocation : '#myc-curr-loc',
+            sidebarControlpanel : '#myc-sidebar-controlpanel'
+        },
+        myc:{
+            version:'@VERSION@',
+            target:'development'
+        },
+        app:{
+            traffic: true,
+            shortcuts: true,
+            router: {
+                html5: true,
+                silent: false,
+                root: '/b/'
+            },
+            focusTimeout : 200,
+            walkthrough : true
+        },
+        share: {
+            siteName : 'Yahoo! Maps',
+            gPlusone : {
+                annotation : 'none',
+                size : 'medium'
+            },
+            twitter : {
+                lang : 'en',
+                dataCount : 'none'
+            },
+            facebook : {
+                lang : 'en_US'
+            },
+            email : {
+                h1 : 'default',
+                h2 : '',
+                h3 : ''
+            }
+        },
+        loader: {
+            timer : 15000
+        },
+        error: {
+            timer : 10000
+        },
+        location:{
+            ads : true,
+            disambiguationCodes : [85,80,70,86,84,71,59,49,39,29,19],
+            pointCodes : [99,90,87,86,85,84,82,80],
+            lineCodes : [79,77,75,74,72,71,70],
+            errorCode : [9]
+        },
+        pagination: {
+            limit : 10
+        },
+        businesses:{
+            domain : '', // relative
+            hiConf : true,
+            pageNumber : 1,
+            hiConfCheckNumber : 5,
+            ads : true,
+            searchTerm : ' near ',
+            percentBeforeRequery : 33
+        },
+        directions:{
+            ads : true,
+            minInputs : 2,
+            maxInputs : 20,
+            entryCodes : [0],
+            flags : ["bizinfo", "geocode", "overview", "originlink", "destlink", "maneuver"],
+            routeType : ["fastest"],
+            vehicleType : 'car',
+            routeOffSet : 10,
+            units : 'm',
+            tolls : false,
+            freeways : false,
+            laterTimeout : 500
+        },
+        weather : {
+            enable : true,
+            flickrImageMaxHeight : 170,
+            flickrImageMinHeight : 40,
+            flickrImageMaxWidth : 300,
+            domain : 'http://weather.yahoo.com'
+        },
+        flickr : {
+            apiKey : 'b9cc47b0b2b841ef4ec10fb9eeb37402'
+        },
+        // http://wiki.corp.yahoo.com/view/GlobalMapsFE/mycSpaceId
+        // http://i13n.corp.yahoo.com/wizard/
+        // http://i13n.corp.yahoo.com/urlmap/?spaceid=1197116579&lookupsidbutton=Lookup+Spaceid
+        // /site/maps/consumer/newmaps_one
+        tracking:{
+            enable: true,
+            comscore : true,
+            rapid : true,
+            logger:{
+                enable: true
+            },
+            mainEvents : {
+                'bookmark':{
+                    's':'1197116590',
+                    'p':'MYC-Bookmark'
+                },
+                'mapInit':{
+                    's':'1197116579',
+                    'p':'MYC-Map Load'
+                },
+                'sidebarToggle':{
+                    's':'1197659986',
+                    'p':'MYC-Siderbar Toggle'
+                },
+                'oneboxSubmit':{
+                    's':'1197116591',
+                    'p':'MYC-Onebox Submit'
+                },
+                'panning':{
+                    's':'1197116583',
+                    'p':'MYC-Map Panning'
+                },
+                'zoom':{
+                    's':'1197116584',
+                    'p':'MYC-Map Zoom'
+                },
+                'locationSearch':{
+                    's':'1197116580',
+                    'p':'MYC-Location Search'
+                },
+                'businessSearch':{
+                    's':'1197116581',
+                    'p':'MYC-Business Search'
+                },
+                'ddSearch':{
+                    's':'1197116582',
+                    'p':'MYC-Direction Search'
+                },
+                'ddDisambiguate':{
+                    's':'1197116588',
+                    'p':'MYC-Disambiguate Search'
+                },
+                'print':{
+                    's':'1197116585',
+                    'p':'MYC-Print'
+                },
+                'curLoc':{
+                    's':'1197116586',
+                    'p':'MYC-Current Location Search'
+                },
+                'flickrOverlay':{
+                    's':'1197116587',
+                    'p':'MYC-Flickr Overlay'
+                },
+                'flickrPanning':{
+                    's':'1197116587',
+                    'p':'MYC-Flickr Panning'
+                },
+                'error':{
+                    's':'1197116589',
+                    'p':'MYC-Error Page'
+                },
+               'timeout':{
+                    's':'1197496615',
+                    'p':'MYC-Timeout'
+                }
+            }
+        },
+        search:{
+            gwsServer: 'http://gws2.maps.yahoo.com',
+            params:{
+                q:'',
+                ll:[1,2],
+                appid: 'ymapsaura2'
+            },
+            local_count:10,
+            assistHelp : true
+        },
+        substitution:{
+            timer : false,
+            closeTimer : 10000
+        },
+        assist:{
+            server : 'http://sugg.us.search.yahoo.net',
+            autocomplete:{
+                maxResults: 10,
+                maxPrimeResults: 3,
+                // resultFilters: 'subWordMatch', // not being used, using a custom implementation to not filter out the gossip results
+                resultHighlighter: 'subWordMatch',
+                resultTextLocator: 'key'
+            },
+            manageLocationsUrl:'http://info.yahoo.com/locationmgt/?locale={locale}&.done={done}',
+            noDefaultLocationText: 'No default location selected'
+        },
+        locdrop:{
+            crumb: null,
+            currentLocation: null,
+            currentLocationGws: null,
+            currentCityLocation: null,
+            loadCurrentCityLocation: false
+        },
+        misc: {
+            cache:48*60*60*1000
+        },
+        traffic: {
+            appid: 'ymapsaura2',
+            minPercentPanRequery: 33,
+            trafficIncidentsMinZoom: 8,
+            majorIncidentsMinZoom: 10,
+            minorIncidentsMinZoom: 12
+        },
+        report: {
+            url : 'http://feedback.yahoo.com/forums/186490-us-maps'
+        },
+        embed: {
+            enable : true,
+            server : 'maps.yahoo.com',
+            'default' :{
+                width : 425,
+                height : 350
+            }
+        },
+        legacy: false
+    };
+
+    Y.namespace('myc');
+
+    Y.myc.config = function(key, _default){
+        var val = Y.myc.util.atPath(config, key);
+        return (Y.Lang.isValue(val) ? val : _default);
+    };
+
+    Y.myc.config.set = function(key, val){
+        Y.myc.util.setAtPath(config, key, val);
+        return Y.myc.config;
+    };
+
+    Y.myc.config.paths = function(){
+        var paths = Y.myc.util.paths(config);
+        return paths;
+    };
+
+    Y.myc.config.set(window.MYC_config||{});
+
+},'@VERSION@',{requires:['myc-util', 'myc-deferred']});

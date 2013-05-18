@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html dir="ltr" lang="en-US" class="intl-us no-js onebox-print"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:og="http://ogp.me/ns#"
+    xmlns:fb="https://www.facebook.com/2008/fbml"
+    itemscope itemtype="http://schema.org/">
+  <head>
+        <!-- REGULAR META PROERTIES -->
+        <meta charset="utf-8">
+        <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+        <meta name="keywords" content="Yahoo maps, driving directions, traffic information, online maps, satellite maps, drivingdirections" />
+        <meta name="description" content="Yahoo! Maps, Driving Directions, Satellite View and Traffic. Rated the best online mapping experience." />
+        <meta name="author" content="" />
+        <meta name="robots" content="index, follow" />
+        <meta name="googlebot" content="index, follow" />
+        <!-- END OF REGULAR META PROPERTIES -->
+        <!-- OG META TAGS -->
+        <meta property="og:title" content="Yahoo! Maps, Driving Directions, and Traffic" />
+        <meta property="og:type" content="website" />
+        <meta property="og:image" content="" />
+        <meta property="og:description" content="Yahoo! Maps, Driving Directions, Satellite View and Traffic. Rated the best online mapping experience." />
+        <meta property="og:site_name" content="Yahoo! Maps" />
+        <meta property="og:url" content=""/>
+        <!-- GEO SPECIFIC TAGS -->
+        <meta property="og:latitude" content=""/>
+        <meta property="og:longitude" content=""/>
+        <meta property="og:street-address" content=""/>
+        <meta property="og:locality" content=""/>
+        <meta property="og:region" content=""/>
+        <meta property="og:postal-code" content=""/>
+        <meta property="og:country-name" content=""/>
+        <meta property="fb:admins" content="" />
+        <!-- END OF GEO SPECIFIC TAGS -->
+        <!-- GOOGLE PLUS TAGS -->
+        <meta itemprop="name" content="Yahoo! Maps, Driving Directions, and Traffic">
+        <meta itemprop="description" content="Yahoo! Maps, Driving Directions, Satellite View and Traffic. Rated the best online mapping experience.">
+        <meta itemprop="image" content="">
+        <!-- END OF GOOGLE PLUS TAGS -->
+        <title>Yahoo! Maps, Driving Directions, and Traffic</title>
+
+        <link rel="dns-prefetch" href="http://l.yimg.com">
+        <link rel="dns-prefetch" href="http://yui.yahooapis.com">
+
+        <link rel="dns-prefetch" href="http://1.maps.nlp.nokia.com">
+        <link rel="dns-prefetch" href="http://2.maps.nlp.nokia.com">
+        <link rel="dns-prefetch" href="http://3.maps.nlp.nokia.com">
+        <link rel="dns-prefetch" href="http://4.maps.nlp.nokia.com">
+
+
+        <link rel="canonical" href="http://maps.yahoo.com" />
+        <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/3.6.0/build/cssreset/cssreset-min.css">
+
+        <!-- Include Print CSS -->
+        <link rel="stylesheet" href="../../src/print/css/print.css" type="text/css" media="print" />
+
+        <!-- DNS PREFETCH -->
+        <link rel="dns-prefetch" href="http://l.yimg.com">
+        <link rel="dns-prefetch" href="http://yui.yahooapis.com">
+
+        <link rel="dns-prefetch" href="http://1.maps.nlp.nokia.com">
+        <link rel="dns-prefetch" href="http://2.maps.nlp.nokia.com">
+        <link rel="dns-prefetch" href="http://3.maps.nlp.nokia.com">
+        <link rel="dns-prefetch" href="http://4.maps.nlp.nokia.com">
+        <!-- END OF DNS PREFETCH -->
+
+        <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=ISO-8859-1">
+        <script type="text/javascript">
+        /*@cc_on
+        'abbr article aside audio canvas details figcaption figure footer header hgroup mark meter nav output progress section summary time video'.replace(/\w+/g,function(n){document.createElement(n)});
+        @*//**/
+        document.documentElement.className = document.documentElement.className.replace( /\bno-js\b/, '' );
+        </script>
+        <link rel="stylesheet" type="text/css" href="http://l.yimg.com/zz/combo?d/lib/yui/2.8.0r4/build/reset/reset-min.css&d/lib/yui/2.8.0r4/build/fonts/fonts-min.css&kx/ucs/uh/css/287/yunivhead-min.css&kx/ucs/uh/css/221/logo-min.css&kx/ucs/notif_v2/css/145/notifications_v2-min.css&kx/ucs/mailcount/css/37/mail_preview-min.css&kx/ucs/search/css/190/search_all-min.css&kx/ucs/search/css/190/search_buttons-min.css&kx/ucs/breakingnews/css/12/breaking_news-min.css">
+        <style type="text/css">
+        @import url(http://localhost:8000/src/app/css/app.css);
+        @import url(http://localhost:8000/src/app/css/loader.css);
+        </style>
+
+        <link rel="stylesheet" type="text/css" media="print" href="http://localhost:8000/src/print/css/print.css" />
+    </head>
+    <body>
+        <div id="wrapper">
+            <div class="loader big"></div>
+            <div id="myc-no-js" style="display:none;">
+                <p>You need to have Javascript enabled in order to use the newest version of Yahoo! Maps</p>
+            </div>
+        </div>
+        <script src="http://yui.yahooapis.com/3.7.3/build/yui/yui-min.js"></script>
+        <script type="text/javascript" src="http://ajax.maps.yahoo.com/static/ymaps-manifest.js"></script>
+        <script>
+            YUI_config.groups.gallery.root= 'gallery-2012.04.26-15-49/build/';
+            YUI_config.groups.gallery.base= 'http://yui.yahooapis.com/combo?gallery-2012.04.26-15-49/build/';
+        </script>
+        <script src="/build/manifest.js"></script>
+        <script>
+            YUI_config.groups.myc.base ='/src/';
+        </script>
+        <script type="text/javascript">
+            var locdrop = {"crumb":"YjN5dHNuYlRFbEs-","currentLocation":{"addr":"Bangalore,Karnataka,India","app":"yahoo.nokia_globalmaps.ups","cc":"IN","city":"Bangalore","country_conf":99,"ctry":"India","ctx":"global","dtime":"2013-02-13T08:05:15Z","id":"id_current","input":"ip","lat":12.955800056458,"lon":77.620979309082,"lvl":1,"raw":"203.110.238.17","sc":"KA","state":"Karnataka","state_conf":98,"town_conf":97,"type":"physical","woe":2295420,"zip":"","zip_conf":0},"currentCityLocation":{"quality":"40","latitude":"12.96697","longitude":"77.58728","offsetlat":"12.96697","offsetlon":"77.58728","radius":"20900","boundingbox":{"north":"13.1984","south":"12.833","east":"77.743896","west":"77.470299"},"name":"","line1":"","line2":"","line3":"Bengaluru, Karnataka","line4":"India","house":"","street":"","xstreet":"","unittype":"","unit":"","postal":"","neighborhood":"","city":"Bengaluru","county":"Bengaluru","state":"Karnataka","country":"India","countrycode":"IN","statecode":"KA","countycode":"","timezone":"Asia\/Kolkata","uzip":"560002","hash":"","woeid":"2295420","woetype":"7"},"loadCurrentCityLocation":true};
+            YUI().use('myc-app-loader',function(Y){var s=new Y.myc.App.Loader(window.config||{},window.locdrop||{})});
+        </script>
+        </script>
+        <script type="text/javascript">YUI().use('node','event','event-mouseenter','substitute','oop','node-focusmanager','node', 'cookie','node', 'event', 'querystring-stringify', 'node-focusmanager', 'cookie', 'substitute', 'json','node','event','event-custom','event-valuechange','classnamemanager','node','event','cookie','node', function(Y) {});</script>
+
+    </body>
+</html>

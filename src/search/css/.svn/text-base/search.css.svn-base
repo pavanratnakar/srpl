@@ -1,0 +1,153 @@
+/************************************************************************
+    Search Assist Locations Default Autocomplete Plugin Styling
+************************************************************************/
+body .search-assist{
+    font-size:              13px;
+    line-height:            15px;
+    color:                  #444;
+    z-index:                501;
+}
+
+body .search-assist .yui3-aclist-item-active,
+body .search-assist .yui3-aclist-item-hover{
+    background:             #F1F1F1;
+}
+
+body .search-assist a{
+    color:                  #444;
+}
+
+body .search-assist a:hover{
+    text-decoration:        none;
+}
+
+.search-assist-list .location{
+    padding:                4px 1.5%;
+}
+
+.search-assist .location .labelled-location{
+    font-size:              12px;
+}
+
+.search-assist .location .info-text{
+    font-size:              11px;
+    vertical-align:         top;
+}
+
+.search-assist .location span {
+    color:                  #444;
+}
+
+.search-assist .location span b {
+    color:                  #333;
+    font-weight:            bold;
+}
+
+body .search-assist .search-assist-content{
+    background:             #fff;
+    border:                 1px solid #AAAAAA;
+    border:                 1px rgb(170,170,170) solid;
+    border-top:             1px solid #CCCCCC;
+    -moz-box-shadow:        rgba(0, 0, 0, 0.1) 0px 1px 1px 0px, rgba(255, 255, 255, 0.8) 3px 6px 13px 0px; 
+    -webkit-box-shadow:     rgba(0, 0, 0, 0.1) 0px 1px 1px 0px, rgba(255, 255, 255, 0.8) 3px 6px 13px 0px; 
+    box-shadow:             rgba(0, 0, 0, 0.1) 0px 1px 1px 0px, rgba(255, 255, 255, 0.8) 3px 6px 13px 0px; 
+}
+
+.search-assist-content .search-assist-list{
+    list-style:             none;
+    margin:                 0;
+    overflow:               hidden;
+    padding:                0;
+}
+
+.search-assist-list .yui3-aclist-item{
+    cursor:                 pointer;
+    list-style:             none;
+    padding:                0;
+    position:               relative;
+    width:                  100%;
+}
+
+.search-assist-list .icon-spacing{
+    padding-left:           32px;
+}
+
+.search-assist-list .location.current,
+.search-assist-list .location.default,
+.search-assist-content .manage {
+    padding:                4px 5px 4px 23px;
+}
+
+
+.search-assist-list .location.current,
+.search-assist-list .location.default{
+    border-bottom:          1px solid #AAAAAA;
+}
+
+.search-assist-list .current-icon{
+    background:             url('../../app/img/myc.png') no-repeat 0 -40px;
+    width:                  16px;
+    height:                 16px;
+    top:                    15%;
+    left:                   3px;
+    position:               absolute;
+}
+
+.search-assist-list .default-icon{
+    background:             url('../../app/img/myc.png') no-repeat 0 -866px;
+    width:                  16px;
+    height:                 14px;
+    top:                    15%;
+    left:                   3px;
+    position:               absolute;
+}
+
+button.assist-dd{
+    background-image:       url('../../app/img/myc.png');
+    background-position:    4px -96px;
+    display:                block;
+    height:                 16px;
+    position:               absolute;
+    width:                  16px;
+    cursor:                 pointer;
+    right:                  1%;
+    top:                    24%;
+}
+
+button.assist-dd.querying{
+    background-image:       url('../../app/img/querying.gif');
+    background-position:    center center;
+}
+
+/************************************************************************
+    Manage Locations Link Styling
+************************************************************************/
+
+.hide-manage-link .manage{
+    display:                none;
+}
+
+.search-assist-content .manage{
+    border-top:             1px solid #AAAAAA;
+    position:               relative;
+}
+
+.search-assist-content .manage:hover{
+    background:             #F1F1F1;
+}
+
+.search-assist-content .manage-icon{
+    background:             url('../../app/img/myc.png') no-repeat 0 -899px;
+    width:                  16px;
+    height:                 16px;
+    top:                    20%;
+    left:                   4px;
+    position:               absolute;
+}
+
+/************************************************************************
+    End of Manage Locations Link Styling
+************************************************************************/
+
+/* YUI CSS Detection Stamp */
+#yui3-css-stamp.myc-search-css { display: none; }

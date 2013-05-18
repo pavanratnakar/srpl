@@ -1,0 +1,3 @@
+<div id="myc-search_box-container">
+	<input type="text" id="myc-search_box" class="yucs-search-input"/>
+</div>

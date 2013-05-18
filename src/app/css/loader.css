@@ -1,0 +1,31 @@
+/************************************************************************
+    Loader
+************************************************************************/
+
+.srpl .loader {
+    border:                 1px solid #CCCCCC;
+    left:                   48.2%;
+    padding:                2px;
+    position:               absolute;
+    top:                    54.3%;
+    border-radius:          5px;
+    z-index:                11000;
+    -webkit-border-radius:  5px;
+    -moz-border-radius:     5px;
+    -khtml-border-radius:   5px;
+}
+
+.srpl .loader.big{
+    background:             #fff url("../img/spinner.gif") no-repeat center center;
+    background-color:       #fff:
+    background-color:       rgba(255, 255, 255, .95);
+    width:                  40px;
+    height:                 40px;
+}
+
+/************************************************************************
+    End of Loader
+************************************************************************/
+
+/* YUI CSS Detection Stamp */
+#yui3-css-stamp.srpl-app-loader-css { display: none; }

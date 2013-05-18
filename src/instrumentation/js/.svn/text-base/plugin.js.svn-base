@@ -1,0 +1,829 @@
+/**
+ * http://fixsingle.corp.yahoo.com/rapid_api3/rapid_api3.php#simpleexample
+ * comscore plugin
+ * @myc-instrumentation-pluginin
+ * @requires
+    plugin,
+    myc-config,
+    myc-instrumentation-userOpt-plugin,
+    myc-tracker-plugin
+*/
+YUI.add('myc-instrumentation-plugin', function(Y){
+
+    var InstrumentationPlugin = function(config){
+        this.host = config.host;
+        InstrumentationPlugin.superclass.constructor.apply(this, arguments);
+    };
+
+    InstrumentationPlugin.NAME = 'instrumentationPlugin';
+    InstrumentationPlugin.NS = 'instrumentation';
+
+    // Attributes and static properties for myc-waypoint-plugin.
+    InstrumentationPlugin.ATTRS = {
+        url : null,
+        oneboxSubmit : null,
+        type : null,
+        initCurrentLocation : null,
+        directionsStarted : null
+    };
+
+    Y.extend(InstrumentationPlugin, Y.Plugin.Base, {
+        eventListeners : [],
+        rapidScript : null,
+        comscoreScript : null,
+        status : null,
+        /**
+         * initialisation method for comScore. Dynmically loads comScore js file
+         * @method comScoreInitializer
+         * @return {void}
+         */
+        rapidInitializer : function(){
+            var t = this,
+                options = {
+                    onFailure:function(){
+                        Y.log('Instrumentation :: Rapid : Script could not be loaded');
+                    },
+                    attributes:{
+                        async: true
+                    },
+                    onSuccess:function(){
+                        Y.log('Instrumentation :: Rapid : Script Added');
+                        if (Y.myc.config('tracking.logger.enable')) t.plug(Y.myc.Plugin.Tracker);
+                    }
+                },
+                src = "http://l.yimg.com/ss/rapid-3.3.js";
+            t.rapidScript = YUI().Get.script(src, options);
+        },
+        /**
+         * @method checkRapid
+         * @return {void}
+         */
+        checkRapid : function(callback){
+            var t = this;
+            callback = callback || function(){};
+            if (Y.Lang.isUndefined(Y.myc.util.namespaceExists('YAHOO.i13n'))) {
+                t.rapidScript.execute(function(){
+                    callback();
+                });
+            } else {
+                callback();
+            }
+        },
+        /**
+         * initialisation method for comScore. Dynmically loads comScore js file
+         * @method comScoreInitializer
+         * @return {void}
+         */
+        comScoreInitializer : function(){
+            var t = this,
+                options = {
+                    onFailure:function(){
+                        Y.log('Instrumentation :: Comscore : Script could not be loaded');
+                    },
+                    attributes:{
+                        async: true
+                    },
+                    onSuccess:function(){}
+                },
+                src = (document.location.protocol === "https:" ? "https://sec.yimg.com/us.js" : "http://l.yimg.com/d/lib/3pm/cs_0.2.js");
+
+            t.comscoreScript = YUI().Get.script(src, options);
+        },
+        /**
+         * @method checkRapid
+         * @return {void}
+         */
+        checkComscore : function(callback){
+            var t = this;
+            callback = callback || function(){};
+            if (Y.Lang.isUndefined(Y.myc.util.namespaceExists('COMSCORE'))) {
+                t.comscoreScript.execute(function(){
+                    callback();
+                });
+            } else {
+                callback();
+            }
+        },
+        /**
+        * The initializer function will run when the plugin is instantiated
+        * @method initializer
+        * @return {void}
+        */
+        initializer:function(config){
+            var t = this;
+
+            t.eventListeners = [];
+            // check if comscore is enabled
+            if (Y.myc.config('tracking.rapid')) t.rapidInitializer();
+            if (Y.myc.config('tracking.comscore')) t.comScoreInitializer();
+            if (Y.myc.config('legacy')) t.set('type','Legacy'); // check if legacy
+            if (Y.myc.util.getURLQueryParam('emb')) t.set('type','Embed'); // check if Embed
+
+            t.setCurrentURL();
+            t.routerEvents();
+            t.sidebarEvents();
+            t.appEvents();
+            t.mapEvents();
+            t.queryEvents();
+            t.globalActionEvents();
+            t.locationEvents();
+            t.businessEvents();
+            t.directionEvents();
+        },
+        /**
+         * set current URL
+         * @method setCurrentURL
+         * @return {void}
+         */
+        setCurrentURL : function(){
+            var url = window.location.href;
+
+            url = url.split('#'); // remove hash parameters
+            this.set('url',url[0]);
+        },
+        /**
+         * @method simpleBookmarkMapInit
+         * @return {void}
+         */
+        simpleBookmarkMapInit : function(e){
+            e = e || {};
+            if (Y.myc.util.checkTypeOfURL('d_b_p_bb')) {
+                var t = this,
+                    type = "Map Load : " + (Y.myc.util.getURLQueryParam('emb') ? 'Embed' : (e.type===null ? 'Bookmark' : e.type)); // only place where additional check is required
+                if (e.type !== null && e.type !== 'Navigation') {
+                    t.rtb_done(type);
+                }
+                t.rapidBeaconFire('mapInit',{
+                    '_event' : type
+                });
+                t.comScoreBeaconFire('mapInit');
+            }
+        },
+        /**
+         * @method routerEvents
+         * @return {void}
+         */
+        routerEvents : function(){
+            var t = this,
+                routerListener,
+                bookmarkOnlyMap = false,
+                type;
+
+            routerListener = t.get('host').get('router').before({
+                'bookmark:location':function(e){
+                    if (t.get('type') !== 'Embed') {
+                        t.set('type','Bookmark');
+                    }
+                },
+                'found:place:init':function(e){
+                    if (t.get('type') !== 'Legacy') {
+                        if (t.get('type') !== 'Embed') {
+                            t.set('type',e.type);
+                        }
+                        if (t.get('type') === 'Navigation') {
+                            t.rtb_init('locationSearch');
+                        }
+                    }
+                },
+                'bookmark:businesses':function(e){
+                    if (t.get('type') !== 'Embed') {
+                        t.set('type','Bookmark');
+                    }
+                },
+                'found:businesses:init':function(e){
+                    if (t.get('type') !== 'Legacy') {
+                        if (t.get('type') !== 'Embed') {
+                            t.set('type',e.type);
+                        }
+                        if (t.get('type') === 'Navigation') {
+                            t.rtb_init('businessSearch');
+                        }
+                    }
+                },
+                'bookmark:directions':function(e){
+                    if (t.get('type') !== 'Embed') {
+                        t.set('type','Bookmark');
+                    }
+                },
+                'found:directions:init':function(e){
+                    if (t.get('type') !== 'Legacy') {
+                        if (t.get('type') !== 'Embed') {
+                            t.set('type',e.type);
+                        }
+                        if (t.get('type') === 'Navigation') {
+                            t.rtb_init('ddSearch');
+                        }
+                    }
+                },
+                'bookmark:map':function(e){
+                    if (t.get('type') !== 'Embed') {
+                        t.set('type','Bookmark');
+                    }
+                },
+                'found:simpleMap':function(e){
+                    t.simpleBookmarkMapInit({type : (t.get('type') === 'Legacy' ? 'Legacy' : e.type)});
+                },
+                'directions:fail':function(e){
+                    t.simpleBookmarkMapInit();
+                },
+                'fail':function(e){
+                    t.simpleBookmarkMapInit({type : t.get('type')});
+                },
+                'found:map':function(e){
+                    if (bookmarkOnlyMap) {
+                        t.simpleBookmarkMapInit();
+                    }
+                },
+                'found:nothing':function(e){
+                    if (t.get('type') !== 'Legacy') {
+                        t.rapidBeaconFire('mapInit',{
+                            '_event' : 'Map Load'
+                        });
+                        t.comScoreBeaconFire('mapInit');
+                        t.set('type',null);
+                    }
+                },
+                'legacy':function(e){
+                    t.set('type','Legacy');
+                }
+            });
+            t.eventListeners.push(routerListener);
+        },
+        /**
+         * @method appEvents
+         * @return {void}
+         */
+        sidebarEvents : function(){
+            var t = this,
+                sidebarEventListener;
+
+            sidebarEventListener = t.get('host').get('sidebar').after({
+                'minimize': function(e){
+                    e = e || {};
+                    if (e.source !== 'sidebar get directions') {
+                        t.rapidBeaconFire('sidebarToggle',{
+                            '_event' : 'Sidebar Minimize'
+                        });
+                    }
+                },
+                'maximize': function(e){
+                    e = e || {};
+                    if (e.source !== 'sidebar get directions') {
+                        t.rapidBeaconFire('sidebarToggle',{
+                            '_event' : 'Sidebar Maximize'
+                        });
+                    }
+                }
+            });
+            t.eventListeners.push(sidebarEventListener);
+        },
+        /**
+         * @method appEvents
+         * @return {void}
+         */
+        appEvents : function(){
+            var t = this,
+                appEventListener,
+                event,
+                type,
+                beacon;
+
+            appEventListener = t.get('host').on({
+                'clear' : function(e){
+                    t.clear();
+                },
+                'render' : function(e){
+                    if (e.currentLocation === true) {
+                        t.set('initCurrentLocation',true);
+                    } else {
+                        t.rtb_done('Map Load');
+                    }
+                    t.rapidBeaconFire('mapInit',{
+                        '_event' : 'Map Load'
+                    });
+                    t.comScoreBeaconFire('mapInit');
+                },
+                'currentLocation:render' : function(e){
+                    t.rtb_init('mapInit');
+                    t.set('type','Navigation');
+                    t.set('initCurrentLocation',true);
+                },
+                'location:complete' : function(e){
+                    beacon = e.beacon === false ? false : true;
+                    if (t.get('oneboxSubmit')) {
+                        if (t.get('oneboxSubmit').sa) {
+                            event = 'Using search assist';
+                        } else {
+                            event = 'Without search assist';
+                        }
+                        t.set('oneboxSubmit',null);
+                        type = "Location Search";
+                    } else if (t.get('initCurrentLocation')) {
+                        beacon = false;
+                        t.set('initCurrentLocation',null);
+                        type = "Init Current Location";
+                    } else if (t.get('type')) {
+                        event = t.get('type');
+                        type = "Location Search : "+event;
+                        t.set('type',null);
+                    } else {
+                        event = 'Need to figure out source';
+                        type = "Location Search";
+                    }
+
+                    t.rtb_done(type);
+                    if (beacon !== false) {
+                        t.rapidBeaconFire('locationSearch',{
+                            '_event' : 'Location search : '+event
+                        });
+                        t.comScoreBeaconFire('locationSearch');
+                    }
+                },
+                'business:complete' : function(e){
+                    type = "Business Search";
+                    // [bug 6013948] Fire a business search beacon if pan is greater then 33%.
+                    // if (e.type !== 'requery') {
+                        if (t.get('oneboxSubmit')) {
+                            if (t.get('oneboxSubmit').sa) {
+                                event = 'Using search assist';
+                            } else {
+                                event = 'Without search assist';
+                            }
+                            t.set('oneboxSubmit',null);
+                        } else if (t.get('type')) {
+                            event = t.get('type');
+                            type = "Business Search : "+event;
+                            t.set('type',null);
+                        } else if (e.type === 'requery') {
+                            event = 'Panning / Zooming';
+                        } else {
+                            event = 'Find Nearby';
+                        }
+                        t.rtb_done(type);
+                        t.rapidBeaconFire('businessSearch',{
+                            '_event' : 'Business search : '+event
+                        });
+                        t.comScoreBeaconFire('businessSearch');
+                    // [bug 6013948] Fire a business search beacon if pan is greater then 33%.
+                    // } else {
+                    //     t.rtb_done(type);
+                    //     Y.log('Business query due to requery');
+                    // }
+                },
+                'direction:complete' : function(e){
+                    e = e || {};
+                    type = "Direction Search";
+                    if (t.get('oneboxSubmit')) {
+                        if (t.get('oneboxSubmit').sa) {
+                            event = 'Using search assist';
+                        } else {
+                            event = 'Without search assist';
+                        }
+                        t.set('oneboxSubmit',null);
+                    } else if (t.get('type')) {
+                        event = t.get('type');
+                        type = "Direction Search : "+event;
+                        t.set('type',null);
+                    } else {
+                        event = e.eSource ? 'Using '+e.eSource : 'Need to figure out source';
+                    }
+                    t.set('directionsStarted',false);
+                    t.rtb_done(type);
+                    t.rapidBeaconFire('ddSearch',{
+                        '_event' : 'Direction search : '+event
+                    });
+                    if (e.eSource !== 'routeOptions') {
+                        t.comScoreBeaconFire('ddSearch');
+                    }
+                },
+                'direction:singleWaypoint' : function(e){
+                    e = e || {};
+                    if (t.get('type')) {
+                        type = "Direction :: Single Waypoint : "+t.get('type');
+                        t.set('type',null);
+                    } else {
+                        type = "Direction :: Single Waypoint";
+                    }
+                    t.set('directionsStarted',false);
+                    t.rtb_done(type);
+                    t.rapidBeaconFire('ddSearch',{
+                        '_event' : type
+                    });
+                    if (e.changeChange === true || e.router === true) {
+                        t.comScoreBeaconFire('ddSearch');
+                    }
+                },
+                'zoom' : function(e){
+                    // [bug 6013948] Fire a business search beacon if pan is greater then 33%.
+                    // For the case when the businesses view is active the page views should be business success and failures
+                    // create exception if zoom is from sidebar or marker is open
+                    if (!(t.get('host').get('active') === "businesses" && !t.get('host').get('map').map.markers.isAnyBusinessMarkerActive() && e.details[0]._event.indexOf("Sidebar") === -1)) {
+                        t.rapidBeaconFire('zoom',{
+                            '_event' : e._event.details[0]._event || e._event.details[0] || ''
+                        });
+                        t.comScoreBeaconFire('zoom');
+                    }
+                },
+                'panning' : function(e){
+                    t.rapidBeaconFire('panning',{
+                        '_event' : e._event.details[0]._event || e._event.details[0] || ''
+                    });
+                    t.comScoreBeaconFire('panning');
+                }
+            });
+            t.eventListeners.push(appEventListener);
+        },
+        /**
+         * trigger events associated with map Events
+         * @method mapEvents
+         * @return {void}
+         */
+        mapEvents : function(){
+            var t = this,
+                mapListener,
+                flickrListener;
+
+            mapListener = t.get('host').get('map').after({
+                'centerChangeByPercentage' : function(e){
+                    // [bug 6013948] Fire a business search beacon if pan is greater then 33%.
+                    // For the case when the businesses view is active the page views should be business success and failures
+                    // Added similar logic for Flickr as well
+                    if ((t.get('host').get('active') !== "businesses") && (!t.get('host').get('map').map.flickr.get('active'))) {
+                        t.rapidBeaconFire('panning',{
+                            '_event' : 'User Panning'
+                        });
+                        t.comScoreBeaconFire('panning');
+                    }
+                }
+            });
+            t.eventListeners.push(mapListener);
+
+            flickrListener = t.get('host').get('map').map.flickr.after({
+                'render':function(e){
+                    t.rapidBeaconFire('flickrOverlay',{
+                        '_event' : 'Flickr : Overlay open'
+                    });
+                    // Commenting as per Andrews suggestion
+                    //t.comScoreBeaconFire('flickr');
+                },
+                'photo:centerChange':function(e){
+                    t.rapidBeaconFire('flickrPanning',{
+                        '_event' : 'Flickr : Panning'
+                    });
+                    t.comScoreBeaconFire('flickrPanning');
+                }
+            });
+        },
+        /**
+         * @method queryEvents
+         * @return {void}
+         */
+        queryEvents : function(){
+            var t = this,
+                oneboxListener,
+                errorListener;
+
+            oneboxListener = t.get('host').get('onebox').on({
+                'submit' : function(e){
+                    t.rtb_init('oneboxSubmit');
+                    t.set('oneboxSubmit',{
+                        'sa' : e.sa
+                    });
+                },
+                'selected:currentLocation' : function(e){
+                    t.rapidBeaconFire('locationSearch',{
+                        '_event' : 'Location search : Using locdrop current location'
+                    });
+                    t.comScoreBeaconFire('locationSearch');
+                },
+                'error' : function(e){
+                    t.rapidBeaconFire('timeout',{
+                        '_event' : 'Onebox API timeout'
+                    });
+                }
+            });
+            t.eventListeners.push(oneboxListener);
+
+            errorListener = t.get('host').get('error').on({
+                'render' : function(e){
+                    t.clear();
+                }
+            });
+            t.eventListeners.push(errorListener);
+        },
+        /**
+         * @method globalActionEvents
+         * @return {void}
+         */
+        globalActionEvents : function(){
+            var t = this,
+                controlPanelListener,
+                curLocListener;
+
+            controlPanelListener = t.get('host').get('sidebar').after({
+                'print:click' : function(e){
+                    t.rapidBeaconFire('print',{
+                        '_event' : 'Global Print : Click'
+                    });
+                    t.comScoreBeaconFire('print');
+                }
+            });
+            t.eventListeners.push(controlPanelListener);
+
+            curLocListener = t.get('host').get('currentLocation').after({
+                'toggleCurrentLocation' : function(e){
+                    if (e.type === 'show') {
+                        t.rapidBeaconFire('curLoc',{
+                            '_event' : e.source === 'locationPreciseLink' ? 'Precise Current Location Selected' : 'Current Location Selected'
+                        });
+                        t.comScoreBeaconFire('curLoc');
+                    }
+                },
+                'complete' : function(e){
+                    if (e.selectCurrentLocation) {
+                        t.rapidBeaconFire('curLoc',{
+                            '_event' : 'Current Location : Selected'
+                        });
+                        t.comScoreBeaconFire('curLoc');
+                    }
+                }
+            });
+            t.eventListeners.push(curLocListener);
+        },
+        /**
+         * trigger events associated with location
+         * @method locationEvents
+         * @return {void}
+         */
+        locationEvents : function(){
+            var t = this,
+                locationOnListener,
+                //locationListener,
+                type;
+
+            // Location render init
+            locationOnListener = t.get('host').get('locationView').on({
+                'render:init' : function(e){
+                    if (!t.get('oneboxSubmit') && !t.get('type') && !t.get('initCurrentLocation')) {
+                        t.rtb_init('locationSearch');
+                    }
+                },
+                'notFound' : function(e){
+                    if (t.get('oneboxSubmit')) {
+                        t.set('oneboxSubmit',null);
+                    }
+                    if (t.get('type')) {
+                        type = "Location Not Found : "+t.get('type');
+                        t.set('type',null);
+                    } else {
+                        type = 'Location Not Found';
+                    }
+                    t.rtb_done(type);
+                    t.rapidBeaconFire('error',{
+                        '_event' : type
+                    });
+                    // Commenting as per Andrews suggestion
+                    //t.comScoreBeaconFire('error');
+                }
+            });
+            t.eventListeners.push(locationOnListener);
+        },
+        /**
+         * trigger events associated with business
+         * @method businessEvents
+         * @return {void}
+         */
+        businessEvents : function(){
+            var t = this,
+                businessOnListener;
+                //businessListener;
+
+            businessOnListener = t.get('host').get('businessView').on({
+                'render:init' : function(e){
+                    if (!t.get('oneboxSubmit') && !t.get('type')) {
+                        t.rtb_init('businessSearch');
+                    }
+                },
+                'notFound' : function(e){
+                    if (t.get('oneboxSubmit')) {
+                        t.set('oneboxSubmit',null);
+                    }
+                    if (t.get('type')) {
+                        type = "Business Not Found : "+t.get('type');
+                        t.set('type',null);
+                    } else if (e.type === 'requery'){
+                        type = 'Business Not Found : Panning / Zooming';
+                    }
+                    t.rtb_done(type);
+                    t.rapidBeaconFire('error',{
+                        '_event' : type
+                    });
+                    if (e.type === 'requery') {
+                        t.comScoreBeaconFire('error');
+                    }
+                },
+                'render:noResultsFound' : function(e){
+                    if (t.get('oneboxSubmit')) {
+                        t.set('oneboxSubmit',null);
+                    }
+                    if (t.get('type')) {
+                        type = "Business Not Found : "+t.get('type');
+                        t.set('type',null);
+                    } else if (e.type === 'requery'){
+                        type = 'Business Not Found : Panning / Zooming';
+                    } else {
+                        type = 'Business Not Found';
+                    }
+                    t.rtb_done(type);
+                    t.rapidBeaconFire('error',{
+                        '_event' : type
+                    });
+                    if (e.type === 'requery') {
+                        t.comScoreBeaconFire('error');
+                    }
+                }
+            });
+        },
+        /**
+         * trigger events associated with direction
+         * @method directionEvents
+         * @return {void}
+         */
+        directionEvents : function(){
+            var t = this,
+                type,
+                viewListener,
+                formListener,
+                pluginListener;
+
+            viewListener = t.get('host').get('directionsView').after({
+                'submit:init' : function(e){
+                    if (!t.get('oneboxSubmit') && !t.get('type') && !t.get('directionsStarted')) {
+                        t.set('directionsStarted',true);
+                        t.rtb_init('ddSearch');
+                    }
+                },
+                'error':function(e){
+                    type = 'Directions Not Found';
+                    if (t.get('oneboxSubmit')) {
+                        t.set('oneboxSubmit',null);
+                    }
+                    if (t.get('type')) {
+                        type = type + " : "+t.get('type');
+                        t.set('type',null);
+                    }
+                    t.set('directionsStarted',false);
+                    t.rtb_done(type);
+                    t.rapidBeaconFire('error',{
+                        '_event' : type
+                    });
+                    // Commenting as per Andrews suggestion
+                    //t.comScoreBeaconFire('error');
+                }
+            });
+            t.eventListeners.push(viewListener);
+
+            formListener = t.get('host').get('directionsView').get('form').on({
+                'submit' : function(e){
+                    if (!t.get('oneboxSubmit') && !t.get('type') && !t.get('directionsStarted')) {
+                        t.set('directionsStarted',true);
+                        t.rtb_init('ddSearch');
+                    }
+                }
+            });
+            t.eventListeners.push(formListener);
+
+            pluginListener = t.get('host').get('directionsView').get('form').get('plugin').after({
+                'disambiguate:expand' : function(e){
+                    t.rapidBeaconFire('ddDisambiguate',{
+                        '_event' : 'Directions :: Sidebar : Disambiguate Expand'
+                    });
+                    t.comScoreBeaconFire('ddDisambiguate');
+                }
+            });
+            t.eventListeners.push(pluginListener);
+        },
+        /**
+         * @method contextMenuEvents
+         * @return {void}
+         */
+        contextMenuEvents : function(){
+            var t = this,
+                cmEventListener;
+
+            cmEventListener = t.get('host').get('contextMenu').after({
+                'menu:zoom:in':function(e){},
+                'menu:zoom:out':function(e){},
+                'menu:center:here':function(e){}
+            });
+            t.eventListeners.push(cmEventListener);
+        },
+        /**
+         * @method clear
+         * @return {void}
+         */
+         clear : function(e){
+            this.setAttrs({
+                oneboxSubmit : null,
+                type : null,
+                initCurrentLocation : null,
+                directionsStarted : null
+            });
+         },
+        /**
+         * trigger comScore call
+         * @method comScoreFire
+         * @return {void}
+         */
+        comScoreBeaconFire : function(pageType){
+            var t = this;
+            t.checkComscore(function(){
+                Y.log('Instrumentation :: Comscore : Firing for '+pageType+' having spaceId : '+Y.myc.config('tracking.mainEvents')[pageType].s);
+                COMSCORE._mapsconf = {
+                    c1:  2, // Beacon Type [Mandatory]
+                    c2:  7241469, // Unique id for Yahoo Properties [Mandatory]
+                    c3:  "", // Unique id for each content producer [Optional]
+                    c4:  t.get('url'), // Curent URL without hash and query [recommended]
+                    c5:  Y.myc.config('tracking.mainEvents')[pageType].s, // Space Id [optional]
+                    c6:  "", // Package [optional]
+                    c15: "" // Cookie Value [optional]
+                };
+                COMSCORE.beacon(COMSCORE._mapsconf);
+            });
+        },
+        /**
+         * trigger rapid Beacon
+         * @method rapidBeaconFire
+         * @return {void}
+         */
+        rapidBeaconFire : function(pageType, meta){
+            var t = this;
+            t.checkRapid(function(){
+                var data,
+                    conf = Y.myc.config('tracking.mainEvents')[pageType],
+                    rapidData;
+
+                data = Y.mix({
+                   _E   : meta._event || conf.p || null
+                }, data);
+
+                rapidData = {
+                    spaceid     : conf.s,
+                    client_only : 1
+                };
+                //override referrer
+                if (pageType !=='mapInit' && (meta._event.indexOf("Bookmark") === -1) && (meta._event.indexOf("Legacy") === -1)) {
+                    rapidData['referrer']='';
+                }
+                rapidData['keys'] = data;
+                if (t.get('rapid')) {
+                    t.get('rapid').destroy();
+                }
+                t.set('rapid', new YAHOO.i13n.Rapid(rapidData));
+                Y.log('Instrumentation :: Rapid : Details');
+                Y.log(rapidData);
+                t.get('rapid').init();
+                // AUTOMATION : Added for automation testing
+                t.status = rapidData;
+                t.fire('rapid:fire');
+            });
+        },
+        /**
+         * @method rtb_init
+         * @param1 pageType - pageType to find the spaceid from YCB
+         * @return {void}
+         */
+        rtb_init : function(pageType) {
+            Y.log('Instrumentation ::: Rtb :: Init : ' + pageType + ' having spaceId '+Y.myc.config('tracking.mainEvents')[pageType].s);
+            if ("undefined" != typeof(rt_SetSpaceid)) {
+                rt_SetSpaceid(Y.myc.config('tracking.mainEvents')[pageType].s);
+            }
+            if ("undefined" != typeof(rt_Start)) {
+                rt_Start();
+            }
+        },
+        /**
+         * @method rtb_done_default
+         * @return {void}
+         */
+        rtb_done : function(desc) {
+            Y.log('Instrumentation ::: Rtb :: Done : ' + desc);
+            if ("undefined" != typeof(rt_SetComment)) {
+                rt_SetComment(desc);
+            }
+            if ("undefined" != typeof(rt_Done)) {
+                rt_Done();
+            }
+        },
+        /**
+        * @method destructor
+        * @return {void}
+        */
+        destructor : function(){
+            Y.myc.util._destructor(this.eventListeners);
+        }
+    });
+
+    Y.namespace('myc.Plugin').Instrumentation = InstrumentationPlugin;
+
+},'@VERSION@',{requires:['plugin','myc-config','myc-tracker-plugin','myc-util']});

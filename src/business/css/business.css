@@ -1,0 +1,25 @@
+.srpl-business h1{
+    font-size:  	2em;
+    line-height:	1.6em;
+    color:      	#FFF;
+    vertical-align: top;
+}
+
+.srpl-business .column1{
+	width:				65%;
+}
+
+.srpl-business .column2{
+	width:				35%;
+}
+
+.srpl-business .srpl-header{
+	height:             290px;
+}
+
+.srpl-business .srpl-body .srpl-container{
+	margin:				10px 0;
+}
+
+/* YUI CSS Detection Stamp */
+#yui3-css-stamp.srpl-business-style-css { display: none; }

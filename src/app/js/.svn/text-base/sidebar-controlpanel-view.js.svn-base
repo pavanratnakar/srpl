@@ -1,0 +1,140 @@
+/**
+ * Create a new myc-app-sidebar-controlpanel view class that extends Y.View and renders the current
+ * state of a myc-app-sidebar-controlpanel instance.
+ * @module myc-app-sidebar-controlpanel-view
+ * @requires
+    view,
+    myc-share-overlay-view,
+    myc-app-templates
+*/
+YUI.add('myc-app-sidebar-controlpanel-view', function(Y){
+
+    var SidebarControlpanelView = function(){
+        SidebarControlpanelView.superclass.constructor.apply(this, arguments);
+    };
+    // Attributes and static properties for myc-app-sidebar-controlpanel
+    SidebarControlpanelView.ATTRS = {
+        container : null,
+        shareOverlayView : {
+            valueFn: function(){
+                return new Y.myc.Share.Overlay.View({
+                    'source' : this.get('container').one('button.share')
+                });
+            }
+        },
+        width : {
+            getter: function(){ return this.get('container').get('offsetWidth'); }
+        },
+        height : {
+            getter: function(){ return this.get('container').get('offsetHeight'); }
+        }
+    };
+
+    SidebarControlpanelView.NAME = 'sidebarView';
+    SidebarControlpanelView.NS = 'app';
+
+    Y.extend(SidebarControlpanelView, Y.View, {
+        template: Y.myc.App.templates.sidebar_controlpanel,
+        eventListeners : [],
+        events:{
+            '.share': {click: 'shareClick'},
+            '.print': {click: 'printClick'},
+            '.directions-option': {click: 'showDirectionContainer'}
+        },
+        /**
+        * @method initEvents
+        * @return {void}
+        */
+        initEvents : function(){
+            var t = this,
+                shareListener;
+
+            shareListener = t.get('shareOverlayView').on({
+                'share:close' : function(e){
+                    t.fire('share:close');
+                },
+                'mail:toggle' : function(e){
+                    t.fire('mail:toggle',e);
+                }
+            });
+            t.eventListeners.push(shareListener);
+        },
+       /**
+        * The initializer function will run when a view is instantiated
+        * @method initializer
+        * @return {void}
+        */
+        initializer: function(config){
+            this.eventListeners = [];
+            this.initEvents();
+        },
+        /**
+        * show control panel
+        * @method render
+        * @return {void}
+        */
+        render : function(){
+            this.get('container').show();
+        },
+        /**
+        * @method printOpen
+        * @return {void}
+        */
+        printOpen : function(){
+            var location = Y.getLocation(),
+                base = location.protocol + '//' + location.host,
+                basePath = base + Y.myc.config('app.router.root'),
+                relPath = location.href.split(basePath)[1] || '',
+                url = basePath + 'obp/' + relPath.replace('#/','');
+
+            window.open(url);
+            this.fire('print:click');
+        },
+        /**
+        * @method destructor
+        * @return {void}
+        */
+        destructor : function(){
+            this.eventListeners = Y.myc.util._destructor(this.eventListeners);
+        },
+
+        // -- Event Handlers -------------------------------------------------------
+
+        /**
+        * @method shareClick
+        * @params {e} e
+        * @return {void}
+        */
+        shareClick : function(e){
+            this.get('shareOverlayView').render();
+            this.fire('share:show');
+        },
+        /**
+        * @method printClick
+        * @params {e} e
+        * @return {void}
+        */
+        printClick : function(e){
+            this.printOpen();
+        },
+        /**
+        * show directions container
+        * @method showDirectionContainer
+        * @params {e} e
+        * @return {void}
+        */
+        showDirectionContainer: function(e){
+            this.fire('direction:show');
+        }
+    });
+
+    Y.namespace('myc.App.Sidebar.Controlpanel');
+    Y.myc.App.Sidebar.Controlpanel.View = SidebarControlpanelView;
+
+}, '@VERSION@',{
+    requires:[
+    'view',
+    'myc-share-overlay-view',
+    'myc-app-templates'
+    ]
+});

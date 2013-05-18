@@ -1,0 +1,6 @@
+<div data-obd="<%= (location.raw.obd) %>" class="location <%= location.raw.type  %>">
+    <% if (location.raw.type === "current" || location.raw.type === "default") { %>
+        <span class="<%= (location.raw.type === "current")? 'current-icon' : 'default-icon' %>"></span>
+    <% } %>
+    <span><%= (location.raw.lbl)? location.display.replace('(', '<span class="labelled-location">(').replace(')', ')</span>') : location.display %><%= (location.raw.type === "current")? ' <span class="info-text">(current location)</span>' : (location.raw.type === "default")? ' <span class="info-text">(default location)</span>' : ''%></span>
+</div>

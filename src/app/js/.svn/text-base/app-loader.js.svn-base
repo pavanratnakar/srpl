@@ -1,0 +1,112 @@
+/**
+ * @module myc-app-loader
+ * @requires
+    base
+*/
+YUI.add('myc-app-loader',function(Y){
+
+    var AppLoader = function(){
+        AppLoader.superclass.constructor.apply(this,arguments);
+    };
+
+    AppLoader.NAME = 'appLoader';
+    AppLoader.NS = 'app';
+
+    Y.extend(AppLoader,Y.Base, {
+        app : null,
+        /**
+        * @method commonConfig
+        * @return {void}
+        */
+        commonConfig : function(Y,config,locdrop){
+            Y.myc.config.set('locdrop', locdrop);
+            config.gwsServer && Y.myc.config.set('search.gwsServer', config.gwsServer);
+            config.assistHelp && config.assistHelp === "false" && Y.myc.config.set('search.assistHelp', false);
+            config.trackingLogger && config.trackingLogger === "false" && Y.myc.config.set('tracking.logger.enable', false);
+            config.saServer && Y.myc.config.set('assist.server', config.saServer);
+            config.animatedTransitions && config.animatedTransitions === "false" && Y.myc.config.set('ymaps.animatedTransitions', false);
+            config.enableWeather && config.enableWeather === "false" && Y.myc.config.set('weather.enable', false);
+        },
+        /**
+        * @method initEvents
+        * @return {void}
+        */
+        initEvents : function(){
+            window.onerror = function(msg){
+                document.body.setAttribute("JSError",msg);
+            };
+        },
+        /**
+        * @method initializer
+        * @return {void}
+        */
+        initializer : function(e){
+            var config = e.config || {},
+                locdrop = e.locdrop || {},
+                url = document.location.href,
+                pushpop = window.history && history.pushState,
+                oneboxRoot = config.oneboxRoot || '/b/',
+                t = this;
+
+            t.initEvents();
+            if (url.match(/\/obp\//gi) || url.match(/\/print/gi)) {
+                YUI().use('myc-print', function(Y){
+                    if (!(url.match(/\/(place|businesses|directions|map)\//gi))) {
+                        Y.myc.config.set('legacy', Y.myc.Print.Router.legacy() || Y.myc.Print.Router.legacyPrint());
+                    }
+                    t.commonConfig(Y,config,locdrop);
+                    Y.myc.config.set('app.router.root', oneboxRoot+'obp');
+                    if (config.ads) {
+                        var ads = config.ads.split(':');
+                        Y.myc.config.set('location.ads', ads[0]==='T' ? true : false);
+                        Y.myc.config.set('businesses.ads', ads[1]==='T' ? true : false);
+                        Y.myc.config.set('directions.ads', ads[2]==='T' ? true : false);
+                    }
+                    if (!pushpop) {
+                        Y.myc.config.set('app.router.html5', false);
+                    }
+                    t.app = new Y.myc.Print.View({
+                        container : '#wrapper'
+                    });
+                    t.app.render();
+                    if (Y.myc.config('legacy')) {
+                        t.app.router.save(Y.myc.Print.Router.forwards(true));
+                    } else {
+                        t.app.router.dispatch();
+                    }
+                });
+            } else {
+                YUI().use('myc-app-view',function(Y){
+                    t.commonConfig(Y,config,locdrop);
+                    Y.myc.config.set('app.router.root', oneboxRoot);
+                    if (config.ads) {
+                        var ads = config.ads.split(':');
+                        Y.myc.config.set('location.ads', ads[0]==='T' ? true : false);
+                        Y.myc.config.set('businesses.ads', ads[1]==='T' ? true : false);
+                        Y.myc.config.set('directions.ads', ads[2]==='T' ? true : false);
+                    }
+                    Y.myc.config.set('app.walkthrough', config.walkthrough==='true' ? true : false);
+                    Y.myc.config.set('userOpt.enable', config.userOpt==='true' ? true : false);
+                    if (!pushpop) {
+                        Y.myc.config.set('app.router.html5', false);
+                    }
+                    t.app = new Y.myc.App.View({
+                        container : '#wrapper'
+                    });
+                    // AUTOMATION : Added for automation testing
+                    t.app.instrumentation.on('rapid:fire',function(e){
+                        t.fire('instrumentation::rapid:fire');
+                    });
+                    t.app.router.start();
+                    t.app.render();
+                });
+            }
+        }
+    });
+
+    Y.namespace('myc.App');
+    Y.myc.App.Loader = AppLoader;
+
+}, '@VERSION@', {
+    requires:['base']
+});

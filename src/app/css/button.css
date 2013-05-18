@@ -1,0 +1,159 @@
+/* FIX FIREFOX EXTRA PADDING FOR BUTTON */
+/*.srpl input[type="button"]::-moz-focus-inner, 
+.srpl button::-moz-focus-inner {
+    border:             0;
+    padding:            0;
+}*/
+/************************************************************************
+    Button Container
+************************************************************************/
+.srpl button,
+.srpl input[type="button"],
+.srpl input[type="submit"]{
+    overflow:           visible; /* ADDED FOR IE7 padding issue */
+    color:              #1D1DA3;
+}
+
+.srpl button.regular,
+.srpl input[type="button"].regular,
+.srpl input[type="submit"].regular{
+    color:              #1D1DA3;
+    text-shadow:        1px 1px 0px rgba(255,255,255,0.8);
+    border:             1px solid #a4a4a3;
+    background:         #f5f7f9; /* Old browsers */
+    background:         -moz-linear-gradient(top, #ffffff 30%, #f5f7f9 100%); /* FF3.6+ */
+    background:         -webkit-gradient(linear, left top, left bottom, color-stop(30%, #ffffff), color-stop(100%, #f5f7f9)); /* Chrome,Safari4+ */
+    background:         -webkit-linear-gradient(top, #ffffff 30%, #f5f7f9 100%); /* Chrome10+,Safari5.1+ */
+    background:         -o-linear-gradient(top, #ffffff 30%, #f5f7f9 100%); /* Opera11.10+ */
+    background:         -ms-linear-gradient(top, #ffffff 30%, #f5f7f9 100%); /* IE10+ */
+    filter:             progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#f5f7f9', GradientType=0 ); /* IE6-9 */
+    background:         linear-gradient(top, #ffffff 30%, #f5f7f9 100%); /* W3C */
+    font-weight:        bold;
+    cursor:             pointer;
+}
+
+.srpl button.regular:hover,
+.srpl input[type="button"].regular:hover,
+.srpl input[type="submit"].regular:hover{
+    background:         rgba(240,240,240,1);
+    -moz-box-shadow:    0px 0px 2px rgba(0,0,0,0.4);
+    -webkit-box-shadow: 0px 0px 2px rgba(0,0,0,0.4);
+    box-shadow:         0px 0px 2px rgba(0,0,0,0.4);
+}
+
+.srpl button.regular:active,
+.srpl button.regular:focus,
+.srpl input[type="submit"].regular:active,
+.srpl input[type="submit"].regular:focus,
+.srpl input[type="button"].regular:active,
+.srpl input[type="button"].regular:focus{
+    background:         #f5f7f9; /* Old browsers */
+    background:         -moz-linear-gradient(top, #f5f7f9 0%, #ffffff 100%); /* FF3.6+ */
+    background:         -webkit-gradient(linear, left top, left bottom, color-stop(0%, #f5f7f9), color-stop(100%, #ffffff)); /* Chrome,Safari4+ */
+    background:         -webkit-linear-gradient(top, #f5f7f9 0%, #ffffff 100%); /* Chrome10+,Safari5.1+ */
+    background:         -o-linear-gradient(top, #f5f7f9 0%, #ffffff 100%); /* Opera11.10+ */
+    background:         -ms-linear-gradient(top, #f5f7f9 0%, #ffffff 100%); /* IE10+ */
+    filter:             progid:DXImageTransform.Microsoft.gradient( startColorstr='#f5f7f9', endColorstr='#ffffff', GradientType=0 ); /* IE6-9 */
+    background:         linear-gradient(top, #f5f7f9 0%, #ffffff 100%); /* W3C */
+}
+
+.srpl button.transparent,
+.srpl input[type="button"].transparent,
+.srpl input[type="submit"].transparent{
+    background:         none;
+    text-decoration:    none;
+    cursor:             pointer;
+    border:             1px solid #a4a4a3;
+    font-weight:        bold;
+    cursor:             pointer;
+    opacity:            0.8;
+    filter:             progid:DXImageTransform.Microsoft.Alpha(opacity=80);
+}
+
+.srpl button.transparent:hover,
+.srpl input[type="button"].transparent:hover,
+.srpl input[type="submit"].transparent:hover{
+    opacity:            1;
+    filter:             progid:DXImageTransform.Microsoft.Alpha(opacity=100);
+}
+
+.srpl button.transparent:active,
+.srpl button.transparent:focus,
+.srpl input[type="submit"].transparent:active,
+.srpl input[type="submit"].transparent:focus,
+.srpl input[type="button"].transparent:active,
+.srpl input[type="button"].transparent:focus{
+    opacity:            1;
+    filter:             progid:DXImageTransform.Microsoft.Alpha(opacity=100);
+}
+
+.srpl input[type=submit].image,
+.srpl input[type=button].image,
+.srpl button.image {
+    line-height:            999px; /* Set it higher than your image height */
+    overflow:               hidden; /* Hide the text */
+    font-size:              0;
+    border:                 none;
+    cursor:                 pointer;
+    background:             transparent;
+}
+
+.srpl button .hide-text{
+    line-height:        999px; /* Set it higher than your image height */
+    overflow:           hidden; /* Hide the text */
+    font-size:          0;
+}
+
+.srpl button.noborder,
+.srpl input[type=button].noborder{
+    border:                 none;
+    background:             none;
+    text-decoration:        none;
+    color:                  #1D1DA3;
+    cursor:                 pointer;
+}
+
+.srpl input[type=button].noborder:hover,
+.srpl button.noborder:hover{
+    text-decoration:        underline;
+}
+
+.srpl button.noborder:active,
+.srpl button.noborder:focus,
+.srpl input[type=button].noborder:active,
+.srpl input[type=button].noborder:focus{
+    text-decoration:        underline;
+}
+
+.srpl button.disabled,
+.srpl button:disabled,
+.srpl input[type=button]:disabled,
+.srpl input[type=button].disabled {
+    color:                  rgba(0,0,0,0.4);
+    text-shadow:            1px 1px 0px rgba(255,255,255,0.5);
+    background:             rgba(220,220,220,1);
+    cursor:                 default;
+    text-decoration:        none !important;
+}
+
+.srpl input[type=button].close.image,
+.srpl button.close.image {
+    position:               absolute;
+    background:             url('../../app/img/myc.png') no-repeat 0 -143px;
+    width:                  9px;
+    height:                 9px;
+}
+
+.srpl input[type=button].shadow,
+.srpl button.shadow {
+    -moz-box-shadow:    1px 1px 3px rgba(0, 0, 0, 0.2);
+    -webkit-box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+    box-shadow:         1px 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/************************************************************************
+    End of Button Container
+************************************************************************/
+
+/* YUI CSS Detection Stamp */
+#yui3-css-stamp.srpl-app-button-css { display: none; }

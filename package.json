@@ -1,0 +1,55 @@
+{
+
+    "name":         "myc",
+    "version":      "0.0.1",
+    "description":  "Front end goodness for maps.yahoo.com",
+    "author":       "Maps team <helsinki-blr-devl@yahoo-inc.com>",
+    "homepage":     "http://maps.yahoo.com",
+    "bugs": { 
+        "url" : "" 
+    },
+    "contributors":[
+        {"name": "Sunil Pai"},
+        {"name": "Pavan Ratnakar"},
+        {"name": "Louis Antony"},
+        {"name": "Shonil Vijay"}
+    ],
+    "os": ["darwin", "linux", "win32"], 
+    "engines": {
+        "node": ">=0.6.0"
+    },
+    "main": "",
+    "bin": {
+
+    },
+    "scripts": {
+
+    },
+
+    "dependencies": {
+        "underscore":   "*",
+        "shifter":      "*",
+        "async":        "*",
+        "burrito":      "*",
+        "glob":         "*",
+        "glob-whatev":  "*",
+        "tako":         "0.2.2",
+        "combohandler": "*",
+        "watchr":       "*",
+        "commander":    "*",
+        "uglify-js":    "*",
+        "wrench":       "*",
+        "express":      "2.5.10",
+        "request":      "*",
+        "xml2json":     "*",
+        "mime":         "*"
+
+        
+    },
+    "keywords": "maps",
+    "license": "Yahoo! Proprietary",
+    "repository": {
+        "type": "svn",
+        "url": ""
+    }
+}

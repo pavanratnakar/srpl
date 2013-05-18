@@ -1,0 +1,6 @@
+<div class="location default icon-spacing no-location">
+    <a href="<%= manageLink %>" target="_blank">
+    	<span class="default-icon"></span> 
+        <span class="link-text"><%= noDefaultLocationText %> <span class="info-text">(edit)</span> </span>
+    </a>
+</div>

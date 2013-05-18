@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html dir="ltr" lang="en-US" class="intl-us onebox-main no-js"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:og="http://ogp.me/ns#"
+    xmlns:fb="https://www.facebook.com/2008/fbml"
+    itemscope itemtype="http://schema.org/">
+  <head>
+        <!-- REGULAR META PROERTIES -->
+        <meta charset="utf-8">
+        <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+        <meta name="keywords" content="Yahoo maps, driving directions, traffic information, online maps, satellite maps, drivingdirections" />
+        <meta name="description" content="Yahoo! Maps, Driving Directions, Satellite View and Traffic. Rated the best online mapping experience." />
+        <meta name="author" content="" />
+        <meta name="robots" content="index, follow" />
+        <meta name="googlebot" content="index, follow" />
+        <!-- END OF REGULAR META PROPERTIES -->
+        <!-- OG META TAGS -->
+        <meta property="og:title" content="Yahoo! Maps, Driving Directions, and Traffic" />
+        <meta property="og:type" content="website" />
+        <meta property="og:image" content="" />
+        <meta property="og:description" content="Yahoo! Maps, Driving Directions, Satellite View and Traffic. Rated the best online mapping experience." />
+        <meta property="og:site_name" content="Yahoo! Maps" />
+        <meta property="og:url" content=""/>
+        <!-- GEO SPECIFIC TAGS -->
+        <meta property="og:latitude" content=""/>
+        <meta property="og:longitude" content=""/>
+        <meta property="og:street-address" content=""/>
+        <meta property="og:locality" content=""/>
+        <meta property="og:region" content=""/>
+        <meta property="og:postal-code" content=""/>
+        <meta property="og:country-name" content=""/>
+        <meta property="fb:admins" content="" />
+        <!-- END OF GEO SPECIFIC TAGS -->
+        <!-- GOOGLE PLUS TAGS -->
+        <meta itemprop="name" content="Yahoo! Maps, Driving Directions, and Traffic">
+        <meta itemprop="description" content="Yahoo! Maps, Driving Directions, Satellite View and Traffic. Rated the best online mapping experience.">
+        <meta itemprop="image" content="">
+        <!-- END OF GOOGLE PLUS TAGS -->
+        <title>Yahoo! Maps, Driving Directions, and Traffic</title>
+
+        <link rel="canonical" href="http://maps.yahoo.com" />
+        <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/3.8.1/build/cssreset/cssreset-min.css">
+
+        <!-- Include Print CSS -->
+        <link rel="stylesheet" href="../../src/print/css/print.css" type="text/css" media="print" />
+
+        <!-- DNS PREFETCH -->
+        <link rel="dns-prefetch" href="http://l.yimg.com">
+        <link rel="dns-prefetch" href="http://yui.yahooapis.com">
+
+        <link rel="dns-prefetch" href="http://1.maps.nlp.nokia.com">
+        <link rel="dns-prefetch" href="http://2.maps.nlp.nokia.com">
+        <link rel="dns-prefetch" href="http://3.maps.nlp.nokia.com">
+        <link rel="dns-prefetch" href="http://4.maps.nlp.nokia.com">
+        <!-- END OF DNS PREFETCH -->
+
+        <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=ISO-8859-1">
+        <script type="text/javascript">
+        /*@cc_on
+        'abbr article aside audio canvas details figcaption figure footer header hgroup mark meter nav output progress section summary time video'.replace(/\w+/g,function(n){document.createElement(n)});
+        @*//**/
+        document.documentElement.className = document.documentElement.className.replace( /\bno-js\b/, '' );
+        </script>
+        <link rel="stylesheet" type="text/css" href="http://l.yimg.com/zz/combo?d/lib/yui/2.8.0r4/build/reset/reset-min.css&d/lib/yui/2.8.0r4/build/fonts/fonts-min.css&kx/ucs/uh/css/287/yunivhead-min.css&kx/ucs/uh/css/221/logo-min.css&kx/ucs/notif_v2/css/145/notifications_v2-min.css&kx/ucs/mailcount/css/37/mail_preview-min.css&kx/ucs/search/css/190/search_all-min.css&kx/ucs/search/css/190/search_buttons-min.css&kx/ucs/breakingnews/css/12/breaking_news-min.css">
+        <style type="text/css">
+        @import url(http://localhost:8000/src/app/css/app.css);
+        @import url(http://localhost:8000/src/app/css/loader.css);
+        </style>
+    </head>
+    <body>
+        <header><style>#yUnivHead { min-width: 960px; }</style><div id="yUnivHead" class="yucs-en-us" data-lang="en-us" data-property="maps">        <a href="#yuhead-search" class="yucs-skipto-search yucs-activate">Skip to search.</a>        <div id="yuhead-hd" class="yuhead-clearfix">        <div id="yuhead-mepanel-cont">            <ul id="yuhead-mepanel" class="yucs-toolbar yucs-activate"  aria-label="User Services"><li class="yuhead-me yuhead-nodivide yuhead-nopad">    <a class="yuhead-signup" href="https://us.lrd.yahoo.com/_ylt=AwpCwcYEvSlQBVsAAQCckuF_/SIG=14pavvvfv/EXP=1346122244/**https%3A//edit.yahoo.com/config/eval_register%3F.src=mp%26.intl=us%26.lang=en-US%26.done=http%3A//saltbeing-dr.bagmane.corp.yahoo.com/b" target="_top" rel="nofollow">    <em>New User?</em> Register</a></li><li class="yuhead-me">        <a href="https://login.yahoo.com/config/login;_ylt=AwpCwcYEvSlQBVsAAgCckuF_?.src=mp&.intl=us&.lang=en-US&.done=http://saltbeing-dr.bagmane.corp.yahoo.com/b"  target="_top" rel="nofollow">    <em>Sign In</em></a></li><li class="yuhead-me"><a href="http://us.lrd.yahoo.com/_ylt=AwpCwcYEvSlQBVsAAwCckuF_/SIG=1214di7lm/EXP=1346122244/**http%3A//help.yahoo.com/l/us/yahoo/global_maps/" rel="nofollow" target="_top">Help</a></li></ul>            <span class="yucs-login-persist yucs-lp-activate" data-bucket="0"></span>            <img width='0' height='0' src="http://geo.yahoo.com/p?s=2146174617&r=http://saltbeing-dr.bagmane.corp.yahoo.com/b&t=1344912645&_li=0&prop=maps&locale=en-us&tst2=100"></img>        </div>        <div id="yuhead-promo"><a href="http://us.lrd.yahoo.com/_ylt=AwpCwcYEvSlQBVsABACckuF_/SIG=11hq254tg/EXP=1346122244/**http%3A//www.yahoo.com/bin/set/" target="_top" rel="nofollow">Make Y! My Homepage<abbr title="Yahoo!"></abbr></a></div>        <div id="yuhead-com-links-cont">            <ul id="yuhead-com-links" class="yucs-toolbar yucs-activate" aria-label="Yahoo! Services">                <li class="yucs-notifications yucs-notif-activate yuhead-com-link-item  yucs-wait">    <a class="ynotif-control yltasis" href="#" rel="nofollow" aria-haspopup="true" title="Notifications" aria-label="notifications" role="button"><span class="sp ynotif-ico-bell"></span><span class="ynotif-notif-count-con hide"><span class="ynotif-notif-count"></span></span>&nbsp;</a>    <div class="yucs-notif-panel hide"         data-ylt-bell="/;_ylt=AwpCwcYEvSlQBVsABQCckuF_"        data-ylt-profile="/;_ylt=AwpCwcYEvSlQBVsABgCckuF_"        data-ylt-app="/;_ylt=AwpCwcYEvSlQBVsABwCckuF_"        data-ylt-cta="/;_ylt=AwpCwcYEvSlQBVsACACckuF_"        data-ylt-pageurl="/;_ylt=AwpCwcYEvSlQBVsACQCckuF_"          data-ylt-signin-cta="/;_ylt=AwpCwcYEvSlQBVsACgCckuF_"        data-guid=""        data-crumb=""        data-mode="2"        data-pagesize="10"                        data-view-more-txt="View More"        data-notif-user="A Yahoo! user"        data-intl="en-us"        data-yql-env=""        data-settings-tooltip="Settings"        data-app-aria-txt="App Icon"        data-view-all-txt="See All Notifications"        data-view-url="http://pulse.yahoo.com/y/notifications"        data-no-items-txt="There are currently no items."        data-no-notif-txt="You have no notifications."        data-notif-error-txt="Notifications with errors:"        data-get-notif-txt="Receive notifications when you comment or discuss content with friends on Yahoo!"        data-try-notif-txt="Learn more"        data-try-notif-link="http://help.yahoo.com//l/us/yahoo/comments/notifications/pnotification-03.html"        data-ylt-try-notif="/;_ylt=AwpCwcYEvSlQBVsACwCckuF_"         data-loading-txt="Loading..."        data-error-unavail-txt="Notifications are temporarily unavailable. Please try again later."        data-middleauth-nonotif-text="You have no new notifications."        data-password-verify-text="Please verify your password to view notifications."        data-authState="signedout"        data-signedout-cta-text="Sign In"        data-popup-login-url="https://login.yahoo.com/config/login_verify2?.pd=c%3DOIVaOGq62e5hAP8Tv..nr5E3&.src=sc"        data-signedout-message="Sign in to view notifications."        data-middleauth-text="You have new notifications.">        <div class="yucs-notif-title-bar yuhead-clearfix">            <span class="yucs-notif-panel-title">Notifications</span>             <a target="_blank" href="http://us.lrd.yahoo.com/_ylt=AwpCwcYEvSlQBVsADACckuF_/SIG=12bfurhkq/EXP=1346122244/**http%3A//help.yahoo.com/l/us/yahoo/comments/notifications" class="yucs-notif-tools">Help</a>        </div>        <ul class="yucs-notif-items-panel" role="menu">        </ul>    </div></li>                <li class="yuhead-com-link-item yucs-mailpreview-ancestor">    <a class="sp yltasis yuhead-ico-mail" href="http://mail.yahoo.com/;_ylt=AwpCwcYEvSlQBVsADQCckuF_?.intl=us&.lang=en-US" rel="nofollow" target="_top">Mail</a><ul class="yucs-mail-preview-panel hide"    data-mail-txt="Mail"    data-mail-view="View all Yahoo! Mail"    data-mail-help-txt="Help"    data-mail-help-url="http://help.yahoo.com/l/us/yahoo/mail/ymail/"    data-mail-loading-txt="Loading..."    data-languagetag="en-us"    data-authstate="signedout"    data-middleauth-signin-text="Click here to view your mail"    data-popup-login-url="https://login.yahoo.com/config/login_verify2?.pd=c%3DOIVaOGq62e5hAP8Tv..nr5E3&.src=sc"    data-middleauthtext="You have {count} new mail."    data-yltmessage-link="http://us.lrd.yahoo.com/_ylt=AwpCwcYEvSlQBVsADgCckuF_/SIG=12fvkracb/EXP=1346122244/**http%3A//mrd.mail.yahoo.com/msg%3Fmid=%7BmsgID%7D%26fid=Inbox"    data-yltviewall-link="http://mail.yahoo.com/;_ylt=AwpCwcYEvSlQBVsADwCckuF_"    data-yltpanelshown="/;_ylt=AwpCwcYEvSlQBVsAEACckuF_"></ul></li><li class="yuhead-com-link-item">    <a href="http://my.yahoo.com/;_ylt=AwpCwcYEvSlQBVsAEQCckuF_"     rel="nofollow"     target="_top">   My Y!    </a></li><li id="yuhead-com-home"><a class="sp yuhead-ico-home" href="http://us.lrd.yahoo.com/_ylt=AwpCwcYEvSlQBVsAEgCckuF_/SIG=119g5j1fm/EXP=1346122244/**http%3A//www.yahoo.com/" rel="nofollow" target="_top">Yahoo!</a></li>            </ul>        </div>    </div>    <div id="yuhead-bd" class="yuhead-clearfix">        <div class="yuhead-logo">   <style>      .yuhead-logo h2{        width:214px;        height:32px;        background-image:url(http://l.yimg.com/a/i/brand/purplelogo/uh/20/maps/maps_us_v2.png);        _background-image:url(http://l.yimg.com/a/i/brand/purplelogo/uh/20/maps/maps_us-484852_v2.gif);      }      .yuhead-logo a{        width:214px;        height:32px;      }      .yuhead-logo div.yuhead-comarketing {       width:214px;      }         </style>   <h2>      <a href="http://us.lrd.yahoo.com/_ylt=AwpCwcYEvSlQBVsAEwCckuF_/SIG=11a9viaa9/EXP=1346122244/**http%3A//maps.yahoo.com/"       target="_top" tabindex="-1">         Yahoo! Maps      </a>   </h2>   <!-- comarketing component --></div>        <div id="yuhead-search">        <div id="yuhead-sform-cont" class="yuhead-s-web yuhead-search-form">        <form role="search" class="yucs-search yucs-activate" target="_top"    action="http://search.yahoo.com/search;_ylt=AwpCwcYEvSlQBVsAFACckuF_" method="get"><table role="presentation">   <tbody role="presentation"><tr role="presentation"><td class="yucs-form-input" role="presentation"> <label for="yuhead-sform-searchfield">     <span>Search</span>             </label>                 <input autocomplete="off" type="text" class="sp yuhead-ico-mglass yuhead-search-hint yucs-search-field" name="p"                  data-sh="Search"                  data-satype="rich"                  data-gosurl=""                  id="yuhead-sform-searchfield"                 data-pubid="" /></td><td NOWRAP class="yucs-form-btn" role="presentation"><div class="yucs-btn-wrap">    <button class="yucs-sweb-btn" type="submit">Search Web</button></div>            </td>         </tr>        </tbody></table><input type="hidden" id="fr" name="fr" value="ush-maps" /><!-- desktop device --></form>            </div>    </div>        <div     id="yucs-bnews"     class="yucs-activate slide hide"     data-linktarget="_top"    data-authstate="signedout"     data-lang="en-us"     data-property="maps">        <h3>        <span class="title">Breaking News</span>        <a class="genericlink hide" href="http://news.yahoo.com">Visit Yahoo! News for the latest.</a>     </h3>    <span class="close">&times;<span class="offscreen">Close this window</span></span>     <p class="container">    </p>    </div>    </div>                <!-- s2s -->    <!-- desktop device -->    </div></header>
+        <div id="wrapper">
+            <div class="loader big"></div>
+            <div id="myc-no-js" style="display:none;">
+                <p>You need to have Javascript enabled in order to use the newest version of Yahoo! Maps</p>
+            </div>
+        </div>
+        <script src="http://yui.yahooapis.com/3.9.1/build/yui/yui-min.js"></script>
+        <script type="text/javascript" src="http://ajax.maps.yahoo.com/static/ymaps-manifest.js"></script>
+        <script src="/build/manifest.js"></script>
+        <script>
+            YUI_config.groups.myc.base ='/src/';
+        </script>
+        <script type="text/javascript">
+            var config={"firstLoad":"true"},locdrop={"crumb":"YjN5dHNuYlRFbEs-","currentLocation":{"addr":"Bangalore,Karnataka,India","app":"yahoo.nokia_globalmaps.ups","cc":"IN","city":"Bangalore","country_conf":99,"ctry":"India","ctx":"global","dtime":"2013-02-13T08:05:15Z","id":"id_current","input":"ip","lat":12.955800056458,"lon":77.620979309082,"lvl":1,"raw":"203.110.238.17","sc":"KA","state":"Karnataka","state_conf":98,"town_conf":97,"type":"physical","woe":2295420,"zip":"","zip_conf":0},"currentCityLocation":{"quality":"40","latitude":"12.96697","longitude":"77.58728","offsetlat":"12.96697","offsetlon":"77.58728","radius":"20900","boundingbox":{"north":"13.1984","south":"12.833","east":"77.743896","west":"77.470299"},"name":"","line1":"","line2":"","line3":"Bengaluru, Karnataka","line4":"India","house":"","street":"","xstreet":"","unittype":"","unit":"","postal":"","neighborhood":"","city":"Bengaluru","county":"Bengaluru","state":"Karnataka","country":"India","countrycode":"IN","statecode":"KA","countycode":"","timezone":"Asia\/Kolkata","uzip":"560002","hash":"","woeid":"2295420","woetype":"7"},"loadCurrentCityLocation":true},myc;
+            YUI().use('myc-app-loader',function(Y){myc=new Y.myc.App.Loader({'config':window.config||{},'locdrop':window.locdrop||{}});});
+        </script>
+        <!-- BELOW SCRIPT NOT TO BE PUSHED TO PRODUCTION -->
+        <script type="text/javascript">
+            YUI().use('myc-app-view',function(Y){
+                myc.on('instrumentation::rapid:fire',function(e){
+                    // Y.log('Instrumentation :: Rapid : Details');
+                    // Y.log(myc.app.instrumentation.status);
+                });
+            });
+        </script>
+        <!-- END OF CHANGE -->
+        <script src="http://l.yimg.com/zz/combo?kx/ucs/sts/js/442/skip-min.js&kx/ucs/uh/js/279/timestamp_library-min.js&kx/ucs/menu_utils/js/164/menu_utils_v2-min.js&kx/ucs/uh/js/267/aria_toolbar-min.js&kx/ucs/username/js/42/user_menu-min.js&kx/ucs/help/js/41/help_menu-min.js&kx/ucs/utility_link/js/20/utility_menu-min.js&kx/ucs/uh/js/262/logo_debug-min.js&kx/ucs/common/js/131/jsonp-cached-min.js&kx/ucs/notif_v2/js/161/notifications_bootstrap-min.js&kx/ucs/common/js/1/setup-min.js&kx/ucs/search/js/224/search-min.js&kx/ucs/search/js/210/search_text_dir-min.js&kx/ucs/common/js/133/jsonp-cached-min.js&kx/ucs/breakingnews/js/22/breaking_news-min.js&kx/ucs/s2s/js/20/s2s-min.js&kx/ucs/uh/js/286/activate_library-min.js"></script>
+        <script type="text/javascript">YUI().use('node','event','event-mouseenter','substitute','oop','node-focusmanager','node', 'cookie','node', 'event', 'querystring-stringify', 'node-focusmanager', 'cookie', 'substitute', 'json','node','event','event-custom','event-valuechange','classnamemanager','node','event','cookie','node', function(Y) {});</script>
+    </body>
+</html>

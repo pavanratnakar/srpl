@@ -1,0 +1,26 @@
+<%
+var pageTitle = "Yahoo! Maps, Driving Directions and Traffic",
+    context;
+if(o.endPoint){
+	Y.myc.config.set('share.email.h1','directions');
+	Y.myc.config.set('share.email.h3',o.endPoint);
+	context = "Driving directions to " +  o.endPoint;	
+}else if(o.business && o.location) {
+	Y.myc.config.set('share.email.h1','listings');
+	Y.myc.config.set('share.email.h2',o.business);
+	Y.myc.config.set('share.email.h3',o.location.getNamedAddress());	
+	context = o.business + " near " + o.location.getNamedAddress();	
+}else if(o.location) {
+	Y.myc.config.set('share.email.h1','location');
+	Y.myc.config.set('share.email.h3',o.location.getNamedAddress());	
+	context = o.location.getNamedAddress();
+}else if(o.business) {
+	Y.myc.config.set('share.email.h1','onlyBusiness');
+	Y.myc.config.set('share.email.h2',o.business);	
+	context = o.business;
+}
+if (context) {
+    pageTitle = context + " on " + pageTitle; 
+}
+%>
+<%= pageTitle %>

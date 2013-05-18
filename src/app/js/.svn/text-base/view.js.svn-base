@@ -1,0 +1,1845 @@
+/**
+ * Create a new myc-app view class that extends Y.View and renders the current
+ * state of a myc-app instance.
+ * @module myc-app-view
+ * @requires
+    'node',
+    'myc-app-button-css',
+    'myc-app-sidebar-view',
+    'myc-app-loader-view',
+    'myc-app-templates',
+    'myc-app-onebox-view',
+    'myc-map-view',
+    'myc-location-view',
+    'myc-businesses-view',
+    'myc-directions-view',
+    'myc-context-menu-view',
+    'myc-error-view',
+    'myc-locdrop-model',
+    'myc-currloc',
+    'myc-app-router',
+    'myc-instrumentation-plugin',
+    'myc-util',
+    'querystring-parse',
+    'graphics',
+    // preloading UH deps here for fewer requests
+    'cookie',
+    'node-focusmanager'
+*/
+YUI.add('myc-app-view',function(Y){
+    "use strict";
+
+    var AppView = function(config){
+        // because of this bug - http://yuilibrary.com/projects/yui3/ticket/2528631
+        // we need to populate the container
+        Y.one(config.container).setContent(this.template());
+        // Have to append aria container due to above bug
+        // One box needs the container to be present
+        Y.one('body')
+            .addClass('yui3-skin-sam')
+            .append(Y.myc.App.templates.aria({
+                id : 'myc'
+            }))
+            .append(Y.myc.App.templates.ac());
+
+
+        if (Y.one('#yuhead-hd')) {
+            Y.one('#yuhead-search')
+                .setContent(Y.myc.App.templates.uh2_onebox())
+                .setStyles({
+                    'display':'block'
+                });
+        } else {
+            Y.one('.yucs-form-input').setContent(Y.myc.App.templates.uh3_onebox());
+        }
+
+        // Add a locdrop fetch so that the app benefits from prefetched locations
+        var locdrop = Y.myc.Locdrop.Model.model();
+        locdrop.fetch({refresh:true});
+        AppView.superclass.constructor.apply(this, arguments);
+    };
+
+    AppView.ATTRS = {
+        /**
+        * viewport
+        */
+        viewport : {
+            getter: function(){
+                return {
+                    height : this.get('body').height - ((Y.one('#yucs-top-bar') ? Y.one('#yucs-top-bar').get('offsetHeight') : 0) + (Y.one('#yucs') ? Y.one('#yucs').get('offsetHeight') : 0) + (Y.one('#yUnivHead') ? Y.one('#yUnivHead').get('offsetHeight') : 0)),
+                    width : this.get('body').width
+                };
+            }
+        },
+        /**
+        * viewport
+        */
+        virtualViewport : {
+            getter: function(){
+                return {
+                    height : this.get('body').height - ((Y.one('#yucs-top-bar') ? Y.one('#yucs-top-bar').get('offsetHeight') : 0) + (Y.one('#yucs') ? Y.one('#yucs').get('offsetHeight') : 0) + (Y.one('#yUnivHead') ? Y.one('#yUnivHead').get('offsetHeight') : 0)),
+                    // width : this.get('body').width - (this.get('sidebar').get('state') === 'maximized' ? (this.get('sidebar').get('container').get('offsetWidth') + this.get('sidebar').get('container').getXY()[0]) : 0)
+                    // Using the fixed value
+                    width : this.get('body').width - Y.myc.config('ymaps.leftRailOffset')
+                };
+            }
+        },
+        /**
+        * body
+        */
+        body : {
+            getter: function(){
+                return {
+                    height : document.body.clientHeight || document.documentElement.offsetHeight || window.innerHeight,
+                    width : document.body.clientWidth || document.documentElement.offsetWidth || window.innerWidth
+                };
+            }
+        },
+        /**
+        * weatherModel
+        */
+        weatherModel : {
+            valueFn: function(){
+                return new Y.myc.Weather.Model();
+            }
+        },
+        /**
+        * active
+        */
+        active: (function(){
+            var paths = ['place', 'directions', 'businesses', 'map'];
+
+            return{
+                value: null,
+                getter: function(value){
+                    // return the view object? for now return value
+                    return value;
+                },
+                validator: function(value){
+                    return (Y.Lang.isNumber(value) && value<paths.length) || Y.Array.indexOf(paths,value)>=0;
+                },
+                setter: function(value){
+                    var active;
+                    switch(typeof value){
+                        case 'number':active = paths[value]; break;
+                        case 'string':active = value; break;
+                        default:active = value; break;
+                    }
+                    return active;
+                }
+            };
+        })(),
+        /**
+        * events specific to sidebar view
+        */
+        sidebar : {
+            valueFn: function(){
+                return new Y.myc.App.Sidebar.View({
+                    container: Y.myc.config('containers.sidebar')
+                });
+            },
+            on: {
+                'direction:show': function(){
+                    if (this.get('active') === 'directions' && this.get('sidebar').get('state') === 'minimized') {
+                        this.get('sidebar').toggle({'source':'sidebar get directions'});
+                    } else {
+                        this.set('active','directions');
+                        this.get('sidebar').showDirections(null,null,'sidebar direction click');
+                        this.updateState(this.get('router').routing,false);
+                    }
+                },
+                'toggleClick': function(e){
+                    this.get('sidebar').toggle({
+                        currentTarget : e.node
+                    });
+                },
+                'minimize': function(){
+                    this.get('map').adjustMapForLeftRail(false);
+                },
+                'maximize': function(){
+                    this.get('map').adjustMapForLeftRail(true);
+                },
+                'resize:complete': function(){
+                    if (this.get('active') === 'directions') {
+                        this.get('directionsView').get('form').get('plugin').alignPlugins();
+                    }
+                    if (this.get('active') === 'place') {
+                        this.get('locationView').get('substitution').render();
+                    }
+                }
+            }
+        },
+        /**
+        * events specific to current location view
+        */
+        currentLocation : {
+            valueFn : function(){
+                return new Y.myc.Currloc.View({
+                    container: Y.myc.config('containers.map')
+                });
+            },
+            on: {
+                'selected' : function(e){
+                    if (e.source === 'locationPreciseLink') {
+                        this.get('loader').render();
+                    }
+                },
+                'complete' : function(e){
+                    this.get('directionsView').get('ads').resize();
+                    if (e.marker) {
+                        this.get('map').addCurrlocMarker(this.get('currentLocation').get('model').get('location'));
+                    }
+                    if (e.zoomToCurrentLocation) {
+                        this.get('businessView').set('renderInProgress', true);
+                        this.get('map').centerToBBox({
+                            tl : this.get('currentLocation').get('model').get('location').tl(),
+                            br : this.get('currentLocation').get('model').get('location').br()
+                        });
+                        this.get('map').center(this.get('currentLocation').get('model').get('location').geo());
+                        this.get('businessView').set('renderInProgress', false);
+                    }
+                    if (e.source === 'locationPreciseLink') {
+                        this.get('sidebar').showLocations({
+                            location : this.get('currentLocation').get('model').get('location')
+                        });
+                        this.get('loader').hide();
+                    }
+                },
+                'removeMarker' : function(){
+                    this.get('directionsView').get('ads').resize();
+                    this.get('map').removeCurrlocMarker();
+                }
+            }
+        },
+        /**
+        * events specific to location view
+        */
+        locationView: {
+            valueFn: function(){
+                return new Y.myc.Location.View({
+                    container : Y.myc.config('containers.location')
+                });
+            },
+            on:{
+                'render:init': function(e){
+                    var t = this,
+                        location = this.get('locationView').get('location');
+
+                    t.get('map').map.flickr.hide();
+                    if (location) {
+                        t.get('weatherModel').query({
+                            woeid: location.get('woeid')
+                        },function(error,data){
+                            t.get('map').map.render(function(){
+                                var m = t.get('map').map.markers.find(t.get('locationView').get('location'));
+                                if (m) {
+                                    t.get('map').map.markers.addWeather(m,data);
+                                }
+                            });
+                        });
+                    }
+                },
+                'render:success': function(e){
+                    this.get('loader').hide();
+                    var t = this,
+                        location = t.get('locationView').get('location'),
+                        routing = t.get('router').routing;
+
+                    t.set('active', 'place');
+
+                    if (!routing) {
+                        t.get('map').centerToBBox({
+                            tl : location.tl(),
+                            br : location.br()
+                        });
+                        t.get('map').center(location.geo());
+                        if (t.get('map').getZoomLevel() > Y.myc.config('ymaps.zoomThresholdLevel')) {
+                            t.get('map').setZoomLevel(Y.myc.config('ymaps.zoomThresholdLevel'));
+                        }
+                    }
+
+                    t.get('map').removeMarkers();
+                    if (t.get('locationView').get('local')) {
+                        Y.each(t.get('locationView').get('local').businesses,function(value,index){
+                            t.get('map').addMarker(value,{
+                                labelImage : 'star',
+                                cssClass : 'myc-business myc-business-at-location',
+                                type : 'businessAtLocation'
+                            });
+                        });
+                    }
+                    t.get('map').addMarker(location,{
+                        weather : true,
+                        open : true
+                    });
+                    // Show precise location link
+                    if (t.get('currentLocation').disabled === false && location.get('type')==='initialCurrent') {
+                        t.get('map').map.render(function(){
+                            var m = t.get('map').map.markers.find(t.get('locationView').get('location'));
+                            if (m) {
+                                t.get('map').map.markers.addPreciseCurrentLocation(m);
+                            }
+                        });
+                    }
+                    t.fire('location:complete',{
+                        beacon : (location.get('type') === 'current' || location.get('type') === 'initialCurrent') ? false : true
+                    }); // USER FOR ROUND TRIP
+                    if (t.get('router').forceUpdate || (!routing && e.updateState)) {
+                        t.updateState(routing,true);
+                        Y.fire('saveLocation',{
+                            location  : location
+                        });
+                    }
+                    // Bug: 6136327 Radius & Location suppressed for sprint 5
+                    // Y.fire('myc:update:location', {
+                    //     'location': location.displayValue()
+                    // });
+                },
+                'resize': function(e){
+                    this.appSidebarResize(e);
+                },
+                'notFound': function(e){
+                    this.get('loader').hide();
+                    this.set('active', 'place');
+                    this.get('map').removeMarkers();
+                    this.updateState(this.get('router').routing,true);
+                },
+                'businessAtLocation:enter' : function(e){
+                    this.get('map').markerClick(e.business);
+                }
+            }
+        },
+        /**
+        * events specific to business view
+        */
+        businessView: {
+            valueFn: function(){
+                return new Y.myc.Businesses.View({
+                    container: Y.myc.config('containers.business')
+                });
+            },
+            on:{
+                'render:success': function(e){
+                    this.get('loader').hide();
+                    this.get('sidebar').toggleNotification({type:'show'});
+                    var t = this,
+                        bbox = t.get('businessView').get('boundingBox'),
+                        routing = t.get('router').routing;
+
+                    t.get('map').map.flickr.hide();
+                    t.set('active', 'businesses');
+
+                    if (t.get('businessView').get('keepLocationMarker')) {
+                        t.get('map').removeMarkers({
+                            type: 'onlyBusinesses'
+                        });
+                    } else {
+                        t.get('map').removeMarkers();
+                    }
+                    t.get('businessView').setAttrs({
+                        renderInProgress: true
+                    });
+                    if (!routing && t.get('businessView').get('centeringEnabled') && bbox) {
+                        // Zooming to Fit BBox, the method below is not named appropriately
+                        // Added a margin of 5%
+                        var vbbox = Y.myc.util.virtualBb(bbox, this.get('viewport').width - Y.myc.config('ymaps.leftRailOffset'), this.get('viewport').width);
+                        t.get('map').centerToBBox({
+                            tl : vbbox.tl,
+                            br : vbbox.br
+                        }, 5);
+                        if (t.get('map').getZoomLevel() > Y.myc.config('ymaps.zoomThresholdLevel')) {
+                            t.get('map').setZoomLevel(Y.myc.config('ymaps.zoomThresholdLevel'));
+                        }
+                        this.get('map').adjustMapForLeftRail(true,false);
+                    }
+
+                    if (!t.get('businessView').get('businessMap') && t.get('businessView').get('nearbyLocation') && !t.get('businessView').get('keepLocationMarker') && t.get('businessView').get('showLocationName') && t.get('businessView').get('showLocationMarker')) {
+                        if (t.get('businessView').get('nearbyLocation') instanceof Y.myc.Business.Model) {
+                            t.get('map').addMarker(t.get('businessView').get('nearbyLocation'),{
+                                color : 'businessLocation',
+                                labelImage : 'star',
+                                type : 'businessLocation'
+                            });
+                        } else {
+                            t.get('map').addMarker(t.get('businessView').get('nearbyLocation'),{
+                                color : 'location',
+                                labelImage : 'star',
+                                type : 'businessLocation'
+                            });
+                        }
+                    }
+                    var index;
+                    for (index = e.businesses.length; index > 0; index--) {
+                        if (!t.get('businessView').get('businessMap')) {
+                            t.get('map').addMarker(e.businesses[index-1], {
+                                label: index
+                            });
+                        } else {
+                            t.get('map').addMarker(e.businesses[index-1], {
+                                labelImage: 'star'
+                            });
+                        }
+                    }
+                    t.get('businessView').setAttrs({
+                        keepLocationMarker: false,
+                        renderInProgress: false,
+                        queryCenter: t.get('map').getMapCenter()
+                    });
+                    t.fire('business:complete',{
+                        type : e.type
+                    });// USED FOR ROUNDTRIP
+                    t.updateState(routing,true);
+                    // Fire save location if only first page, and only if the business search is not implicit in nature 
+                    if (e.pageNumber === 1 && t.get('businessView').get('location') && t.get('businessView').get('local').details && t.get('businessView').get('local').details.locationsource !== "implicit") {
+                        Y.fire('saveLocation',{
+                            location  : t.get('businessView').get('location')
+                        });
+                    }
+                },
+                'render:noResultsFound': function(e){
+                    this.get('loader').hide();
+                    this.get('map').map.flickr.hide();
+                    this.get('sidebar').toggleNotification({'type':'hide'});
+                    this.set('active', 'businesses');
+                    if (this.get('businessView').get('keepLocationMarker')) {
+                        this.get('map').removeMarkers({
+                            type: 'onlyBusinesses'
+                        });
+                    } else {
+                        this.get('map').removeMarkers();
+                    }
+                    if (this.get('businessView').get('nearbyLocation') && !this.get('businessView').get('keepLocationMarker') && this.get('businessView').get('showLocationName') && this.get('businessView').get('showLocationMarker')) {
+                        if (this.get('businessView').get('nearbyLocation') instanceof Y.myc.Business.Model) {
+                            this.get('map').addMarker(this.get('businessView').get('nearbyLocation'),{
+                                color : 'businessLocation',
+                                labelImage : 'star',
+                                type : 'businessLocation'
+                            });
+                        } else {
+                            this.get('map').addMarker(this.get('businessView').get('nearbyLocation'),{
+                                color : 'location',
+                                labelImage : 'star',
+                                type : 'businessLocation'
+                            });
+                        }
+                    }
+                    this.get('businessView').setAttrs({
+                        keepLocationMarker: false,
+                        renderInProgress: false,
+                        queryCenter: this.get('map').getMapCenter()
+                    });
+                    this.updateState(this.get('router').routing,true);
+                },
+                listEnter: function(e){
+                    this.get('map').markerHover(e.business);
+                },
+                listExit: function(e){
+                    this.get('map').markerHoverOut(e.business);
+                },
+                listClick:  function(e){
+                    this.get('map').markerClick(e.business);
+                    this.get('map').adjustMapForLeftRail(true, false);
+                },
+                zoom:  function(e){
+                    this.get('businessView').set('renderInProgress', true);
+                    this.get('map').center(e.business.geo());
+                    this.get('map').zoomBoost();
+                    this.get('map').adjustMapForLeftRail(true, false);
+                    this.get('businessView').set('renderInProgress', false);
+                },
+                directionsClick: function(e){
+                    this.get('sidebar').showDirections({
+                        location : e.business
+                    },null,'sidebar-business');
+                },
+                'localQuery:start': function(){
+                    this.get('loader').render();
+                },
+                'localQuery:complete': function(){
+                    this.get('loader').hide();
+                },
+                'notFound': function(e){
+                    this.get('locationView').setAttrs({
+                        'q' : this.get('businessView').get('q'),
+                        'location' : this.get('businessView').get('location')
+                    });
+                    this.get('businessView').clear();
+                    this.get('locationView').notFound();
+                },
+                'resize': function(e){
+                    this.appSidebarResize(e);
+                }
+            },
+            after : {
+                'zoom': function(e){
+                    this.appMapZoom('Business Sidebar Zoom Here');
+                }
+            }
+        },
+        /**
+        * directions view specific events
+        */
+        directionsView: {
+            valueFn: function(){
+                return new Y.myc.Directions.View({
+                    container: Y.myc.config('containers.directions'),
+                    ariaContainer : Y.myc.config('containers.aria')
+                });
+            },
+            on:{
+                'close:click': function(e){
+                    this.set('active','map');
+                    this.get('sidebar').reset({'resize':true});
+                    this.get('onebox').focus();
+                    this.updateState(false,true);
+                },
+                'clear': function(e){
+                    e = e || {};
+                    if (e.removeMarkers !== false) {
+                        this.get('map').removeMarkers();
+                    }
+                    this.get('map').remove(this.get('directionsView').get('model').get('route'));
+                },
+                'form:clear:click': function(e){
+                    this.get('sidebar').reset();
+                    // HACKY FIX TO ENSURE APPROPRIATE BOUNDING BOX IS SET
+                    this.get('sidebar').set('state','maximized');
+                    this.updateState(false,true);
+                },
+                'submit:init': function(e){
+                    if (e.submitSuccess) {
+                        this.get('loader').render();
+                    }
+                    this.get('sidebar').reset({'sidebarNotification':'clear'});
+                    // HACKY FIX TO ENSURE APPROPRIATE BOUNDING BOX IS SET
+                    this.get('sidebar').set('state','maximized');
+                    this.get('map').remove(this.get('directionsView').get('model').get('route'));
+                    this.get('map').removeMarkers({type:'disambiguate'});
+                },
+                'render:init': function(e){
+                    this.get('map').map.flickr.hide();
+                    this.get('sidebar').hideAll({
+                        source : 'directions'
+                    });
+                },
+                'listing:complete': function(e){
+                    this.get('sidebar').toggleNotification({type:'show'});
+                },
+                'submit': function(e){
+                    var t = this,
+                        w =  t.get('directionsView').get('model').get('waypoints');
+
+                    if (Y.myc.util.cleanArray(w).length >= 2) {
+                        t.get('directionsView').get('model').query({
+                            'height' : t.get('virtualViewport').height,
+                            'width' : t.get('virtualViewport').width,
+                            'routeType' : t.get('directionsView').get('formRouteOptions').getRouteType(),
+                            'draggable' : true
+                        });
+                    } else {
+                        if (t.get('router').routing) {
+                            t.get('loader').hide();
+                            t.fire('direction:singleWaypoint',{router : true});
+                            if (t.get('router').forceUpdate) {
+                                t.updateState(t.get('router').routing,true);
+                            }
+                            t.appSidebarResize({'source':'single wayoint','scrollTop':0,'delay':0});
+                            t.get('router').fire('end'); //YUCK.
+                        } else {
+                            var centerChange = false;
+                            if (e.eSource !== 'context-menu') {
+                                t.get('loader').hide();
+                                // since we have only origin/destination
+                                // set the boundingbox to origin/destination
+                                var location = w[0] ? w[0].location : Y.last(w).location;
+                                if (location.get('boundingbox')) {
+                                    t.get('map').centerToBBox({
+                                        tl : location.tl(),
+                                        br : location.br()
+                                    });
+                                    t.get('map').center(location.geo());
+                                    // hacky fix
+                                } else if (location instanceof Y.myc.Business.Model) {
+                                    t.get('map').centerToBBox({
+                                        tl : location.geo(),
+                                        br : location.geo()
+                                    });
+                                }
+                                centerChange = true;
+                                this.get('map').adjustMapForLeftRail(true,false);
+                            }
+                            t.fire('direction:singleWaypoint',{centerChange : centerChange});
+                            t.updateState(t.get('router').routing,true);
+                            t.appSidebarResize({'source':'single wayoint','scrollTop':0,'delay':0});
+                        }
+                    }
+                },
+                'units:changed': function(){
+                    this.updateState(false,true);
+                },
+                'error': function(e){
+                    this.get('sidebar').clearNotification();
+                    this.get('loader').hide();
+                    this.updateState(this.get('router').routing,true);
+                    if (this.get('router').routing) {
+                        this.get('router').fire('end');
+                    }
+                },
+                'draw': function(e){
+                    if (e.routeDrag) {
+                        this.updateState(false,true);
+                        return;
+                    }
+                    var t = this;
+                    t.get('loader').hide();
+                    if (!t.get('router').routing) {
+                        var bbox = t.get('directionsView').get('model').get('route').getBoundingBox();
+                        t.get('map').centerToBBox({
+                            tl : new Y.YMaps.GeoLocation({
+                                lat : bbox[0].get('lat'),
+                                lon : bbox[1].get('lon')
+                            }),
+                            br : new Y.YMaps.GeoLocation({
+                                lat : bbox[1].get('lat'),
+                                lon : bbox[0].get('lon')
+                            })
+                        },
+                        Y.myc.config('directions.routeOffSet'));
+                        t.get('map').adjustMapForLeftRail(true,false);
+                    }
+                    t.get('map').draw(t.get('directionsView').get('model').get('route'));
+                    if (t.get('router').forceUpdate || !t.get('router').routing) {
+                        t.updateState(t.get('router').routing,true);
+                    }
+                    t.get('router').fire('end');
+                    t.fire('direction:complete',e);
+                },
+                'disambiguate:select': function(e){
+                    this.get('map').removeMarkers({type:'disambiguate'});
+                },
+                'disambiguate:clear': function(e){
+                    this.get('map').removeMarkers({type:'disambiguate'});
+                },
+                'disambiguate:enter': function(e){
+                    this.get('map').markerHover(e.location);
+                },
+                'disambiguate:exit': function(e){
+                    this.get('map').markerHoverOut(e.location);
+                },
+                'disambiguate:expand': function(e){
+                    var t = this,
+                        index;
+
+                    this.get('sidebar').clearNotification();
+                    // only remove disambiguate markers
+                    t.get('map').removeMarkers({
+                        type : 'disambiguate'
+                    });
+                    t.get('map').remove(t.get('directionsView').get('model').get('route'));
+                    t.get('map').centerToBBox({
+                        tl : e.boundingBox.tl,
+                        br : e.boundingBox.br
+                    });
+                    t.get('map').adjustMapForLeftRail(true, false);
+                    for (index = e.locations.length; index > 0; index--) {
+                        t.get('map').addMarker(e.locations[index-1], {
+                            label : index,// forcefully passing label
+                            type : 'directionsDisambiguate',
+                            node : e.node,
+                            disambiguate : e.disambiguate
+                        });
+                    }
+                },
+                'listing:waypointEnter': function(e){
+                    this.get('map').markerHover(e.location);
+                },
+                'listing:waypointExit': function(e){
+                    this.get('map').markerHoverOut(e.location);
+                },
+                'listing:waypointClick': function(e){
+                    this.get('map').markerClick(e.location);
+                    this.get('map').adjustMapForLeftRail(true, false);
+                },
+                'listing:enter': function(e){
+                    this.get('map').addMarker(e.location,{
+                        'type' : 'directions',
+                        'units' : e.units
+                    });
+                },
+                'listing:exit': function(e){
+                    this.get('map').removeMarker(e.location);
+                },
+                'listing:zoom-in': function(e){
+                    // matching five box logic and hardcoded zooom levels
+                    if (this.get('map').getZoomLevel() < (Y.myc.config('ymaps.zoomThresholdLevel')+1)) {
+                        this.get('map').setZoomLevel(
+                            Math.max((Y.myc.config('ymaps.zoomThresholdLevel')+1),this.get('map').getZoomLevel()));
+                    }
+                    this.get('map').center(e.listing.geo());
+                    this.get('map').adjustMapForLeftRail(true, false);
+                },
+                'listing:zoom-out': function(e){
+                    var bbox = this.get('directionsView').get('model').get('route').getBoundingBox();
+                    this.get('map').centerToBBox({
+                        tl : new Y.YMaps.GeoLocation({
+                            lat : bbox[0].get('lat'),
+                            lon : bbox[1].get('lon')
+                        }),
+                        br : new Y.YMaps.GeoLocation({
+                            lat : bbox[1].get('lat'),
+                            lon : bbox[0].get('lon')
+                        })
+                    },
+                    Y.myc.config('directions.routeOffSet'));
+                    this.get('map').adjustMapForLeftRail(true, false);
+                },
+                'render:force': function(e){
+                    this.get('sidebar').showDirections(null,null,e.eSource);
+                },
+                'allowAddingInputsChange': function(e){
+                    this.get('contextMenu').set('directionOptions',e.newVal);
+                },
+                'removeWaypoint': function(e){
+                    this.get('map').removeMarker(e.location);
+                },
+                'resize': function(e){
+                    if (e.delay === 0) {
+                        this.appSidebarResize(e);
+                    } else {
+                        Y.later(e.delay || Y.myc.config('directions.laterTimeout'), this, function(){
+                            this.appSidebarResize(e);
+                        }, [], false);
+                    }
+                }
+            },
+            after : {
+                'addWaypoint': function(e){
+                    this.set('active', 'directions');
+                    this.get('map').addMarker(e.location,{
+                        type : 'directions',
+                        node : e.node,
+                        label : this.get('directionsView').get('form').labels[e.index]
+                    });
+                    if (e.save !== false) {
+                        Y.fire('saveLocation',{
+                            location : e.location
+                        });
+                    }
+                },
+                'listing:zoom-in' : function(e){
+                    this.appMapZoom('Directions Sidebar Listing Zoom-In');
+                },
+                'listing:zoom-out' : function(e){
+                    this.appMapZoom('Directions Sidebar Listing Zoom-Out');
+                }
+            }
+        },
+        /**
+        * error
+        */
+        error : {
+            valueFn: function(){
+                return new  Y.myc.Error.View({
+                    container : Y.myc.config('containers.error')
+                });
+            }
+        },
+        /**
+        * loader
+        */
+        loader : {
+            valueFn: function(){
+                return new Y.myc.App.Loader.View({
+                    container : Y.myc.config('containers.loader'),
+                    app : this
+                });
+            },
+            on : {
+                'error':function(e){
+                    this.get('error').render();
+                }
+            }
+        },
+        /**
+        * context menu
+        */
+        contextMenu : {
+            valueFn: function(){
+                return new Y.myc.Context.Menu.View();
+            },
+            on: {
+                'menu:zoom:in': function(e){
+                    this.get('map').zoomAtLocation(e.geo, 'in');
+                },
+                'menu:zoom:out': function(e){
+                    this.get('map').zoomAtLocation(e.geo, 'out');
+                },
+                'menu:center:here': function(e){
+                    this.get('map').center(e.geo);
+                    if (this.get('sidebar').get('state') === "maximized") {
+                        this.get('map').adjustMapForLeftRail(true, false);
+                    }
+                },
+                'menu:directions:from': function(e){
+                    this.get('directionsView').addWaypoint({
+                        location : e.geo,
+                        forceAdd : true,
+                        type : 'origin',
+                        submit : true,
+                        eSource : 'context-menu'
+                    });
+                },
+                'menu:directions:to': function(e){
+                    this.get('directionsView').addWaypoint({
+                        location : e.geo,
+                        forceAdd : true,
+                        type : 'destination',
+                        submit : true,
+                        eSource : 'context-menu'
+                    });
+                }
+            },
+            after: {
+                'menu:zoom:in': function(e){
+                    this.appMapZoom('Context Menu Zoom In');
+                },
+                'menu:zoom:out': function(e){
+                    this.appMapZoom('Context Menu Zoom Out');
+                },
+                'menu:center:here': function(e){
+                    this.appMapPan({
+                        '_event' : 'Context Menu Center Here'
+                    });
+                }
+            }
+        },
+        /**
+        * one box and assoicated events
+        */
+        onebox: {
+            valueFn: function(){
+                return new Y.myc.App.OneBox.View({
+                    container : Y.one('#yuhead-hd') ? Y.myc.config('containers.uh2_onebox') : Y.myc.config('containers.uh3_onebox'),
+                    ariaContainer : Y.myc.config('containers.aria')
+                });
+            },
+            onceAfter : {
+                'value:changed' : function(e){
+                    this.get('walkthrough') && this.get('walkthrough').clear();
+                }
+            },
+            on: {
+                'submit': function(e){
+                    this.fire('submit');
+                    this.get('error').clear();
+                    this.get('loader').render();
+                },
+                'error': function(e){
+                    // remove querying for everything
+                    Y.all('.querying').removeClass('querying');
+                    this.get('loader').hide();
+                    this.get('error').render();
+                },
+                'found': function(e){
+                    if (e.type === 'location') {
+                        this.get('sidebar').showLocations(e, this.get('onebox').getValue());
+                    }
+                    if (e.type === 'business') {
+                        this.get('sidebar').showBusiness(e, this.get('onebox').getValue());
+                    }
+                    if (e.type === 'directions') {
+                        this.get('sidebar').showDirections(e, this.get('onebox').getValue(),'onebox');
+                    }
+                }
+            }
+        },
+        /**
+        * map
+        */
+        map : {
+            valueFn: function(){
+                // superhack - read bb from url directly and set inital lat lon on to map
+                var loc = Y.getLocation().href,
+                    lat,
+                    lon,
+                    zoomLevel,
+                    bb,
+                    qs = loc.split('?')[1] || loc.split('#')[1];
+
+                this.get('router').routing = false;
+                if (qs) {
+                    qs = Y.myc.util.queryStringParse(qs);
+                    if (qs.bb) {
+                        var pieces = Y.Array.map(qs.bb.split(','), function(p){ return parseFloat(p,10); });
+                        lat = (pieces[0] + pieces[2])/2;
+                        lon = (pieces[1] + pieces[3])/2;
+                        bb = qs.bb;
+                        this.get('router').routing = true;
+                    } else if (qs.lat && qs.lon) {
+                        lat = qs.lat;
+                        lon = qs.lon;
+                        if (qs.zoom) {
+                            this.get('router').routing = true;
+                        }
+                        zoomLevel = qs.zoom || Y.myc.config('ymaps.zoomLevel');
+                    }
+                }
+
+                if (!(lat && lon) && !Y.myc.util.checkTypeOfURL('d_b_p') && Y.myc.config('locdrop.currentCityLocation.boundingbox')) {
+                    var north = parseFloat(Y.myc.config('locdrop.currentCityLocation.boundingbox.north'), 10);
+                    var west = parseFloat(Y.myc.config('locdrop.currentCityLocation.boundingbox.west'), 10);
+                    var south = parseFloat(Y.myc.config('locdrop.currentCityLocation.boundingbox.south'), 10);
+                    var east = parseFloat(Y.myc.config('locdrop.currentCityLocation.boundingbox.east'), 10);
+
+                    lat = (north+south)/2;
+                    lon = (west+east)/2;
+                    if (Y.myc.config('locdrop.loadCurrentCityLocation')) {
+                        lat = parseFloat(Y.myc.config('locdrop.currentCityLocation.latitude'), 10);
+                        lon = parseFloat(Y.myc.config('locdrop.currentCityLocation.longitude'), 10);
+                    }
+                    bb = north + ',' + west + ',' + south + ',' + east;
+                    this.get('router').routing = true;
+                }
+                lat = lat || Y.myc.config('locdrop.currentCityLocation.latitude') || Y.myc.config('ymaps.center.latitude');
+                lon = lon || Y.myc.config('locdrop.currentCityLocation.longitude') || Y.myc.config('ymaps.center.longitude');
+                // ADDED THIS TO ENSURE DIRECTION INPUT PLUGIS HAVE LAT AND LON EVEN BEFORE
+                // RENDER MAP IS CALLED
+                this.get('directionsView').get('form').get('plugin').setAttrs({
+                    'saLat' : lat,
+                    'saLon' : lon
+                });
+                return new Y.myc.Map.View({
+                    bb:         bb,
+                    container:  Y.myc.config('containers.map'),
+                    height :    this.get('viewport').height,
+                    width :     this.get('viewport').width,
+                    lat:        lat,
+                    lon :       lon,
+                    zoomLevel:  zoomLevel,
+                    traffic :   (qs && qs.trf && qs.trf === 1) ? true : false,
+                    adjustForSidebar : (loc.match(/\/businesses\//gi) || loc.match(/\/directions\//gi) || (qs && (qs.tt || qs.business) && (qs.q || qs.q1 || qs.location)) || ( qs && qs.q2))
+                });
+            },
+            on: {
+                'myc:update:latlon' : function(e){
+                    Y.log('App View :: Event : Update Lat Lon');
+                    Y.log('State : ' + this.get('sidebar').get('state'));
+                    Y.log('Real Lon : ' + this.get('map').map.get('center').get('lon'));
+                    Y.log('Virtual Lon : ' + this.get('map').getVirtualCenter().get('lon'));
+                    var center = this.get('sidebar').get('state') === 'maximized' ? this.get('map').getVirtualCenter() : this.get('map').map.get('center');
+                    Y.fire('myc:update:latlon',{
+                        'context' : this,
+                        'oEvent:' : e,
+                        'latitude' : center.get('lat'),
+                        'longitude' : center.get('lon')
+                        // Bug: 6136327 Radius & Location suppressed for sprint 5
+                        // 'radius' : t.getRadiusInMiles()
+                    });
+                },
+                'map:centerChange' : function(e){
+                    this.get('contextMenu').hide();
+                },
+                'map:contextmenu:click' : function(e){
+                    // check ensures that the context menu is not rendered in case of other elements such as markers/toolbars
+                    if (this.get('contextMenu').onContextMenu(e.origEvent.target)) {
+                        e.preventDefault();
+                        this.get('contextMenu').setAttrs({
+                            position: {
+                                x: e.origEvent.clientX,
+                                y: e.origEvent.clientY
+                            },
+                            geoPosition: e.geo,
+                            zoomLevel: this.get('map').getZoomLevel()
+                        });
+                        this.get('contextMenu').render(e);
+                    }
+                },
+                'map:click' : function(e){
+                    this.get('contextMenu').hide();
+                },
+                'map:onDrag:drag' : function(e){
+                    this.get('contextMenu').hide();
+                },
+                'flickr:photo:hover': function(e){
+                    this.get('map').markerHover(e.id);
+                },
+                'flickr:photo:out': function(e){
+                    this.get('map').markerHoverOut(e.id);
+                },
+                'flickr:photo:click': function(e){
+                    this.get('map').showFlickrMarker(e.id);
+                }
+            },
+            after: {
+                'map:showTrafficChange' : function(e){
+                    if (!this.get('router').get('initialLoad')) {
+                        var t = this;
+                        Y.wait(0).then(function(){t.updateState(false,false);});
+                    }
+                },
+                'map:typeChange' : function(e){
+                    if (!this.get('router').get('initialLoad')) {
+                        var t = this;
+                        t.get('contextMenu').hide();
+                        Y.wait(0).then(function(){t.updateState(false,false);});
+                    }
+                },
+                'map:zoomLevelChange' : function(e){
+                    var t = this;
+                    if (!t.get('router').initialLoad) { // Added this check to avoid requery if bbox update happens after business search is complete
+                        t.get('contextMenu').hide();
+                        if (t.get('active') === 'businesses' && !t.get('businessView').get('renderInProgress') && !t.get('businessView').get('businessMap')) {
+                            if (!t.get('map').isAnyBusinessMarkerActive()) {
+                                Y.wait(200).then(function() {
+                                    if (!t.get('businessView').get('renderInProgress')) {
+                                        var center = t.get('map').getCenter();
+                                        if (t.get('sidebar').get('state') === 'maximized') {
+                                            center = t.get('map').updateCenterForLeftRail(center);
+                                        } else {
+                                            t.get('map').adjustMapForLeftRail(true, false);
+                                        }
+                                        t.get('sidebar').resetSidebar();
+                                        t.get('sidebar').set('state','maximized');
+                                        t.get('businessView').set('renderInProgress', true);
+                                        t.get('businessView').requery({
+                                            lat : center.latitude,
+                                            lon : center.longitude,
+                                            radius : t.get('map').getRadiusInMiles()
+                                        });
+                                    }
+                                });
+                            }
+                        }
+                    }
+                },
+                'map:centerChangeForUser' : Y.myc.util.debounce(function(e){
+                    // Added initialLoad check to avoid requery if bbox update happens after business search is complete
+                    if (!this.get('router').initialLoad  && this.get('active') === 'businesses' && this.get('businessView').get('queryCenter') && !this.get('businessView').get('renderInProgress') && !this.get('businessView').get('businessMap')) {
+                        if (!this.get('map').isAnyBusinessMarkerActive()) {
+                            var queryCenter = this.get('map').map.checkCenterChangeByPercentage(this.get('businessView').get('queryCenter'), Y.myc.config('businesses.percentBeforeRequery'));
+                            if (queryCenter) {
+                                if (this.get('sidebar').get('state') === 'maximized') {
+                                    queryCenter = this.get('map').updateCenterForLeftRail(queryCenter);
+                                } else {
+                                    this.get('map').adjustMapForLeftRail(true, false);
+                                }
+                                this.get('sidebar').resetSidebar();
+                                // HACKY FIX TO ENSURE APPROPRIATE BOUNDING BOX IS SET
+                                this.get('sidebar').set('state','maximized');
+                                this.get('businessView').set('renderInProgress', true);
+                                this.get('businessView').panRequery({
+                                    lat : queryCenter.lat,
+                                    lon : queryCenter.lon,
+                                    radius : this.get('map').getRadiusInMiles()
+                                });
+                            }
+                        }
+                    }
+                    this.updateState(false,false);
+                },50),
+                'centerChangeDueToValidUserInteraction' : function(e){
+                    this.appMapPan({
+                        '_event' : e.type+' centerChangeDueToValidUserInteraction',
+                        'instrumentation' : e.changeByValidPercentage || false
+                    });
+                },
+                'map:mapCenterAdjusted': function(e){
+                    e = e || {};
+                    if (e.updateState !== false) {
+                        this.updateState(false,false);
+                    }
+                }
+            }
+        },
+        router: {
+            valueFn: function(){
+                this.plug(Y.myc.App.Router, Y.myc.config('app.router'));
+                return this.router;
+            },
+            before:{
+                'bookmark:location' : function(req,res,next){
+                    this.get('loader').render();
+                },
+                'bookmark:businesses' : function(req,res,next){
+                    this.get('loader').render();
+                },
+                'bookmark:directions' : function(req,res,next){
+                    this.get('loader').render();
+                }
+            },
+            on:{
+                'router:start': function(e){
+                    this.clear();
+                },
+                'found:place': function(e){
+                    Y.log('App View ::: Router :: Found : Place');
+                    this.get('sidebar').showLocations({
+                        location : e.location || null
+                    },e.q);
+                    Y.myc.util.setPageTitle(this.pageTitleTemplate({o:{
+                        location : this.get('locationView').get('location')
+                    }}));
+                },
+                'found:businesses': function(e){
+                    var t = this,
+                        bizAttrs = {
+                            location : e.location || (e.locations && e.locations[0]) || null,
+                            businesses : e.businesses,
+                            local : e.local || null,
+                            pageNumber : e.p,
+                            hiConfFlag : e.conf,
+                            hname : e.hname,
+                            showLocationMarker : e.smarker,
+                            businessMap : e.bizMap
+                        };
+                    // Special params for the case the user has done pan/zoom
+                    if (e.llr) {
+                        bizAttrs.centeringEnabled = false;
+                        bizAttrs.requeryParams = {
+                            lat: e.llr[0],
+                            lon: e.llr[1],
+                            radius: e.llr[2]
+                        };
+                    }
+                    t.get('sidebar').showBusiness(bizAttrs,e.q);
+                    var o = {}, bizView = t.get('businessView'), bizLocal = bizView.get('local');
+                    o.location = (bizView.get('showLocationName'))? bizView.get('location') : null;
+                    if (bizLocal && bizLocal.details) {
+                        o.business = bizLocal.details.business;
+                    }
+                    Y.myc.util.setPageTitle(t.pageTitleTemplate({o:o}));
+                },
+                'found:directions': function(e){
+                    this.get('directionsView').updateState({
+                        waypoints : e.locations,
+                        units : e.units,
+                        tolls : e.tolls,
+                        freeways : e.freeways,
+                        dragpoints : e.dragpoints
+                    });
+                },
+                'found:q': function(e){
+                    this.get('onebox').get('input').set('value', e.q);
+                },
+                'found:map': function(e){
+                    Y.log('App View ::: Router :: Found : Map');
+                    var map = this.get('map');
+                    var loc = Y.getLocation().href;
+
+                    if (map.map.TrafficPlugin) map.map.TrafficPlugin.remove();
+                    if (e.lat && e.lon && e.zoomLevel) {
+                        map.zoomToLatLon({
+                            lat: e.lat,
+                            lon: e.lon,
+                            zoomLevel: e.zoomLevel
+                        });
+                    } else if (e.bb) {
+                        map.centerToBBox({
+                            tl: e.bb.tl,
+                            br: e.bb.br
+                        });
+                    } else if (!this._initCurrentLocationLoaded && !Y.myc.config('legacy') && !Y.myc.util.checkTypeOfURL('d_b_p_bb') && Y.myc.config('locdrop.loadCurrentCityLocation') && Y.myc.config('locdrop.currentCityLocation')) {
+                        this.fire('currentLocation:render');
+                        this.showInitialCurrentLocation();
+                    }
+
+                    if (loc.match(/\/businesses\//gi) || loc.match(/\/directions\//gi)){
+                        map.adjustMapForLeftRail(true, false);
+                    }
+
+                    if (!Y.myc.util.checkTypeOfURL('d_b_p')) {
+                        this.get('onebox').focus();
+                    } else if (Y.myc.util.checkTypeOfURL('d_b_p')) {
+                        this.get('loader').render();
+                    }
+                    map.setAttrs({
+                        'traffic': e.trf === true ? true : false,
+                        'mapType': e.t || Y.myc.config('ymaps.defaultView')
+                    });
+                    if (e.trf === true) {
+                        map.initLoadTraffic();
+                    }
+                },
+                'legacy': function(e){
+                    if (e.type === 'onlyMap') {
+                        this.updateState(false,false);
+                    }
+                },
+                'fail': function(e){
+                    Y.log('App View ::: Router :: Fail');
+                    if (this.get('router').forceUpdate) {
+                        this.updateState(false,false);
+                    }
+                    this.get('loader').hide();
+                    this.get('map').map.flickr.hide();
+                    this.get('sidebar').hideAll();
+                    this.get('map').removeMarkers();
+                },
+                'found:simpleMap': function(e){
+                    Y.log('App View ::: Router :: Found : Simple Map');
+                    this.get('loader').hide();
+                    this.get('map').map.flickr.hide();
+                    this.get('sidebar').hideAll();
+                    this.get('sidebar').resize({'hide':true});
+                    this.get('map').removeMarkers();
+                },
+                'found:nothing': function(e){
+                    Y.log('App View ::: Router :: Found : Noting');
+                    if (!this._initCurrentLocationLoaded) {
+                        this.get('loader').hide();
+                        this.get('map').map.flickr.hide();
+                        this.get('sidebar').hideAll();
+                        this.get('map').removeMarkers();
+                    }
+                }
+            },
+            after:{
+                'end': function(e){
+                    Y.log('App View ::: Router :: End');
+                    // Hack to increment the router count after the page load
+                    this.get('router').routingCount++;
+                }
+            }
+        },
+        walkthrough : {
+            valueFn: function(){
+                if (Y.myc.config('app.walkthrough')) {
+                    var features = [];
+                    if (Y.one('#yuhead-hd')) {
+                        features[0] = {
+                            container : '#myc-one-box-search',
+                            title : 'Welcome to Yahoo! Maps',
+                            description : 'Use our new single search box to look up locations, nearby businesses and driving directions',
+                            position : 'TL'
+                        };
+                    } else {
+                        features[0] = {
+                            container : '#myc-search_box',
+                            title : 'Welcome to Yahoo! Maps',
+                            description : 'Use our new single search box to look up locations, nearby businesses and driving directions',
+                            position : 'BL',
+                            move : [102,0]
+                        };
+                    }
+                    return new Y.myc.WalkThrough.View({
+                        container : this.get('container'),
+                        features : features
+                    });
+                } else {
+                    return null;
+                }
+            }
+        }
+    };
+
+    AppView.NAME = 'appView';
+    AppView.NS = 'app';
+
+    Y.extend(AppView, Y.View, {
+        template: Y.myc.App.templates.base,
+        pageTitleTemplate: Y.myc.App.templates.page_title,
+        eventListeners : [],
+        _zoomChangeValid : true,
+        _initCurrentLocationLoaded : false,
+        /** Check if for given target key events should be allowed
+         * @method checkIfKeydownAllowed
+         * @param {object} target object
+         * @return {boolean} true/false ( true if focus not on textbox / location wrapper button / location widget link
+        */
+        checkIfKeydownAllowed : function(e){
+            var target  =  e.target;
+
+            if (target.get('tagName') && target.get('tagName').toLowerCase() == "input"  && (target.get('type').toLowerCase() == "text" || target.get('type').toLowerCase() == "search")) { // check if input text box
+                return false;
+            } else if (target.get('tagName') && target.get('tagName').toLowerCase() == "button" && target.get('parentNode') && target.get('parentNode').hasClass('location-widget-wrapper')) { // check if location-widget-wrapper button
+                return false;
+            } else if (target.get('tagName') && target.get('tagName').toLowerCase() == "a" && target.get('parentNode') && target.get('parentNode').get('parentNode').get('parentNode').get('parentNode').hasClass('yui3-locationwidget-content')) { // check if location-widget drop down links
+                return false;
+            }
+            return true;
+        },
+        /**
+        * key events
+        * @method keyEvents
+        * @return {void}
+        */
+        keyEvents : function(e){
+            var t = this,
+                keydownListener;
+
+            keydownListener = Y.one('body').on('keydown', function(e){
+                if (t.checkIfKeydownAllowed(e)) {
+                    // if control key is pressed. Might not work across browsers
+                    // since we are trying to override default browser shortcut.
+                    if (e.ctrlKey) {
+                        switch(e.keyCode) {
+                            case 80: // key press p
+                                t.get('sidebar').get('controlpanel').printOpen();
+                            break;
+
+                            default:
+                            break;
+                            // do noting
+                        }
+                    }
+                    // single key events
+                    else {
+                        switch(e.keyCode) {
+                            case 27: // escape key press
+                                Y.fire('myc::keydown:escape');
+                            break;
+
+                            case 80: // key press p - open print
+                                t.get('sidebar').get('controlpanel').printOpen();
+                            break;
+
+                            case 69: // key press e - share
+                                    t.get('sidebar').showShare();
+                            break;
+
+                            default:
+                              // do noting
+                            break;
+                        }
+                    }
+                } else {
+                    switch(e.keyCode) {
+                        case 27: // escape key press
+                            Y.fire('myc::keydown:escape');
+                        break;
+
+                        default:
+                          // do noting
+                        break;
+                    }
+
+                }
+            });
+            t.eventListeners.push(keydownListener);
+        },
+        /**
+         * initEvents
+         * @param  {object} t
+         * @return {void}
+        */
+        initEvents : function(t){
+            var windowresizeListener = Y.on('windowresize', function(){
+                t.layoutUpdate();
+                Y.fire('myc:resize');
+            },null);
+            t.eventListeners.push(windowresizeListener);
+
+            var globalOnListeners = Y.on({
+                'found:businesses' : function(e){
+                    t.get('sidebar').showBusiness(e, e.q);
+                    t.get('loader').hide();
+                },
+                'find:nearby:start' : function(e){
+                    if (t.get('active') === 'businesses') {
+                        t.get('businessView').set('renderInProgress', true);
+                    }
+                    t.get('sidebar').hideAll();
+                    t.get('directionsView').close();
+                    //t.get('map').center(location.geo()); // if we enable centering the map jerks with the query start and then readjusts after the query completes
+                    if (e.location instanceof Y.myc.Business.Model) {
+                        t.get('map').addMarker(e.location,{
+                            color : 'businessLocation',
+                            labelImage : 'star',
+                            type : 'businessLocation'
+                            //cssClass : 'myc-business-near-location'
+                        });
+                    } else {
+                        t.get('map').addMarker(e.location,{
+                            color : 'location',
+                            labelImage : 'star',
+                            type : 'businessLocation'
+                            //cssClass : 'myc-business-near-location'
+                        });
+                    }
+                    t.get('loader').render();
+                    if (t.get('active') === 'businesses') {
+                        t.get('businessView').set('renderInProgress', false);
+                    }
+                }
+            });
+            t.eventListeners.push(globalOnListeners);
+
+            var globalBeforeListeners = Y.before({
+                'myc:map:zoom:in:click' : function(e){
+                    t.recordVirtualCenter();
+                },
+                'myc:map:zoom:out:click' : function(e){
+                    t.recordVirtualCenter();
+                },
+                'myc:map:zoom:slide' : function(e){
+                    t.recordVirtualCenter();
+                }
+            });
+            t.eventListeners.push(globalBeforeListeners);
+
+            var globalAfterListeners = Y.after({
+                'myc:map:mouse:scroll:zoom' : Y.myc.util.debounce(function(e){
+                    t.appMapZoom('Map Mouse Scroll Zoom');
+                },100),
+                'myc:map:zoom:in:click' : function(e){
+                    t.appMapZoom('Map Zoom Control plus', true);
+                },
+                'myc:map:zoom:out:click' : function(e){
+                    t.appMapZoom('Map Zoom Control minus', true);
+                },
+                'myc:map:zoom:slide' : function(e){
+                    t.appMapZoom('Map Zoom Control zoom slide', true);
+                }
+            });
+            t.eventListeners.push(globalAfterListeners);
+
+            var appListener = t.on({
+                'state:change': function(e){
+                    Y.fire('state:change');
+                    var o = {};
+                    if (t.get('active') === 'place') {
+                        o.location = t.get('locationView').get('location');
+                    } else if (t.get('active') === 'businesses') {
+                        o.location = (t.get('businessView').get('showLocationName'))? t.get('businessView').get('location') : null;
+                        if (t.get('businessView').get('local')) {
+                            o.business = t.get('businessView').get('local').details.business;
+                        }
+                    } else if (t.get('active') === 'directions') {
+                        var waypoints = Y.myc.util.cleanArray(t.get('directionsView').get('listing').get('directionsModel').get('waypoints'));
+                        if (waypoints && waypoints.length) {
+                            o.endPoint = waypoints[waypoints.length-1].location.getNamedAddress();
+                        }
+                    }
+                    if (t.get('currentLocation').disabled !== true) {
+                        t.get('currentLocation').get('container').one('button.curr-loc').removeClass('querying');
+                    }
+                    t.get('walkthrough') && t.get('walkthrough').clear();
+                    Y.myc.util.setPageTitle(t.pageTitleTemplate({o:o}));
+                }
+            });
+            t.eventListeners.push(appListener);
+
+            // The handlers for document.body added so that the context menu can be hidden in case user click anywhere else on the page
+            var documentListener = Y.one(document.body).on({
+                'contextmenu' : function(e){
+                    var node = e.target;
+                    if (!node.ancestor('.ymap-viewport', true)) {
+                        if (!node.ancestor('.context-menu', true)) {
+                            t.get('contextMenu').hide();
+                        }
+                    }
+                    if (!t.get('contextMenu').onContextMenu(node)) {
+                        t.get('contextMenu').hide();
+                    }
+                },
+                // Same as above, the click handler for the body ensures the context menu gets closed in case of a click any wher else on the map
+                'click' : function(e){
+                    var node = e.target;
+                    if (!node.ancestor('.ymap-viewport', true)) {
+                        if (!node.ancestor('.context-menu', true)) {
+                            t.get('contextMenu').hide();
+                        }
+                    }
+                }
+            });
+            t.eventListeners.push(documentListener);
+
+            var mapListener = t.get('map').on('map:renderComplete', function(e){
+                Y.one('.ymap-viewport .ymap-proxy').on('contextmenu', function(e){
+                    var check = t.get('contextMenu').onContextMenu(e.target);
+                    if (check) {
+                        e.preventDefault();
+                    }
+                });
+            });
+            t.eventListeners.push(mapListener);
+
+            var mapBodyListener = t.get('map').map.get('body').after('dblclick',function(e){
+                t.appMapZoom('Map Double Click');
+            });
+            t.eventListeners.push(mapBodyListener);
+        },
+        /**
+        * @method recordVirtualCenter
+        * @return {void}
+        */
+        recordVirtualCenter: function() {
+            if (this.get('sidebar').get('state') === "maximized") {
+                this.get('map').setZoomOffset();
+                // this._virtualCenter = this.get('map').getVirtualCenter();
+            }
+            else {
+                this.get('map').resetZoomOffset();
+                // this._virtualCenter = null;
+            }
+
+        },
+        /**
+        * @method adjustToVirtualCenter
+        * @return {void}
+        */
+        adjustToVirtualCenter: function() {
+            this.get('map').resetZoomOffset();
+            // if (this.get('sidebar').get('state') === "maximized" && this._virtualCenter) {
+            //     this.get('map').center(this._virtualCenter);
+            //     this.get('map').adjustMapForLeftRail(true, false);
+            //     this._virtualCenter = null;
+            // }
+        },
+        /**
+        * @method appMapPan
+        * @return {void}
+        */
+        appMapPan : function(e){
+            e = e || {};
+            var t = this;
+            Y.wait(0).then(function(){t.updateState(false,false);});
+            if (e.instrumentation !== false) {
+                t.fire('panning',{
+                    '_event' : e._event || e._type + ' action'
+                });
+            }
+        },
+        /**
+        * @method appMapZoom
+        * @return {void}
+        */
+        appMapZoom : function(_event, adjustToVirtualCenter){
+            var t = this;
+
+            Y.wait(200).then(function(){
+                if ((t.get('map').map.get('zoomLevel') === Y.myc.config('ymaps.minZoom')) || (t.get('map').map.get('zoomLevel') === Y.myc.config('ymaps.maxZoom'))) {
+                    if (t._zoomChangeValid !== false) {
+                        if (adjustToVirtualCenter) {
+                            t.adjustToVirtualCenter();
+                        }
+                        Y.wait(0).then(function(){t.updateState(false,false);});
+                        t.fire('zoom',{
+                            '_event' : _event
+                        });
+                    }
+                    t._zoomChangeValid = false;
+                } else {
+                    t._zoomChangeValid = true;
+                    if (adjustToVirtualCenter) {
+                        t.adjustToVirtualCenter();
+                    }
+                    Y.wait(0).then(function(){t.updateState(false,false);});
+                    t.fire('zoom',{
+                        '_event' : _event
+                    });
+                }
+            });
+        },
+        /**
+        * events specific to marker
+        * @method markerEvents
+        * @return {void}
+        */
+        markerEvents : function(t){
+            var location,node;
+
+            var markerZClickAfter = Y.after('marker:zoom:click',function(e){
+                t.appMapZoom('Zoom click from '+e.marker.get('type')+' marker');
+            });
+            t.eventListeners.push(markerZClickAfter);
+
+            var markerEvents = Y.on({
+                'marker:zoom:click' : function(data){
+                    location = data.marker.get('location');
+                    // if (t.get('active') === 'businesses' && data.isBusinessLocation) {
+                    //     t.get('businessView').set('keepLocationMarker', true);
+                    // }
+                    t.get('map').zoomBoost();
+                    t.get('map').center(location.geo());
+                    if (t.get('sidebar').get('state') === "maximized") {
+                        t.get('map').adjustMapForLeftRail(true, false);
+                    }
+                },
+                'marker:locAsCurLocRemove:remove' : function(data){
+                    if (t.get('currentLocation').disabled !== true && t.get('currentLocation').get('active')) {
+                        t.get('map').addCurrlocMarker(t.get('currentLocation').get('model').get('location'));
+                    }
+                },
+                'marker:location:directions:click' : function(data){
+                    t.get('sidebar').showDirections({
+                        location : data.marker.get('location'),
+                        active : t.get('active')
+                    },null,'marker-location');
+                },
+                'marker:business:directions:click' : function(data){
+                    t.get('sidebar').showDirections({
+                        location : data.marker.get('location'),
+                        active : t.get('active')
+                    },null,'marker-'+data.marker.get('type'));
+                },
+                'marker:disambiguate:utl:click' : function(data){
+                    node = data.marker.get('node');
+                    t.get('map').removeMarkers({
+                        type : 'disambiguate'
+                    });
+                    node.disambiguate.close();
+                    t.get('directionsView').get('form').get('plugin').addWaypointToInput({
+                        node : node,
+                        location : data.marker.get('location'),
+                        submit : true,
+                        eSource : 'marker-disambiguate'
+                    });
+                    t.get('directionsView').get('form').bestFocus();
+                },
+                'marker:location:weather:photo:click' : function(e){
+                    if (!t.get('map').map.flickr.get('active')) {
+                        t.get('map').showFlickrCarosuel({
+                            photo : e.photo,
+                            geo : e.geo,
+                            id : e.id,
+                            fill : 2,
+                            slide : false
+                        });
+                    } else {
+                        t.get('map').map.flickr.removeActives();
+                        t.get('map').map.flickr.showImage({id : e.id});
+                    }
+                },
+                'marker:precise-location:clicked' : function(e){
+                    // if HTML5 is not available fallback to locdrop enhanced location  
+                    if (t.get('currentLocation').disabled === true) {
+                        if (Y.myc.config('locdrop.currentLocation')) {
+                            var latlon = Y.myc.config('locdrop.currentLocation.lat') + ',' + Y.myc.config('locdrop.currentLocation.lon');
+                            Y.myc.Search.Model.model().findLocation({q : Y.myc.config('locdrop.currentLocation.addr')}, function(err, data){
+                                if (!err) {
+                                    t.get('sidebar').showLocations({
+                                        location : data.locations[0],
+                                        updateState : false
+                                    });
+                                 }
+                            });
+                        }
+                    } else {
+                        t.get('currentLocation').toggleCurrentLocation({
+                            'type' : 'show',
+                            'source' : 'locationPreciseLink',
+                            'zoomToCurrentLocation' : false,
+                            'marker' : false
+                        });
+                    }
+                }
+            });
+            t.eventListeners.push(markerEvents);
+        },
+        /**
+        * The initializer function will run when a view is instantiated
+        * @method initializer
+        * params {hash} config
+        * @return {void}
+        */
+        initializer: function(config){
+            var t = this;
+
+            t.eventListeners = [];
+
+            if (Y.myc.config('tracking.enable')) t.plug(Y.myc.Plugin.Instrumentation);
+
+            Y.each(AppView.ATTRS, function(spec, attrName){
+                Y.each(['on', 'once', 'after', 'onceAfter'], function(type){
+                    Y.each(spec[type], function(handler, evt){
+                        t.get(attrName)[type](evt, Y.bind(handler,t));
+                    });
+                });
+            });
+
+            // assign direction,location,business views to sidebar
+            t.get('sidebar').setAttrs({
+                locationView : t.get('locationView'),
+                businessView : t.get('businessView'),
+                directionsView : t.get('directionsView'),
+                currentLocationView : t.get("currentLocation")
+            });
+
+            // append myc fader
+            if (!Y.one('#myc-fader-container')) {
+                Y.one('body').appendChild(Y.myc.App.templates.fader());
+            }
+
+            t.initEvents(t);
+            t.keyEvents(t);
+            t.markerEvents(t);
+        },
+        /**
+        * @method showInitialCurrentLocation
+        * @return {void}
+        */
+        showInitialCurrentLocation : function(){
+            var t = this,
+                location = new Y.myc.Location.Model(Y.myc.config('locdrop.currentCityLocation'));
+
+            t.fire('initCurrentLocation'); // used for intrumentation
+            t._initCurrentLocationLoaded = true;
+            location.set('type','initialCurrent');
+            t.get('sidebar').showLocations({
+                location : location,
+                updateState : false
+            });
+            Y.myc.util.setPageTitle(t.pageTitleTemplate({o:{}}));
+            t.get('router').fire('end');
+        },
+        /**
+        * @method appSidebarResize
+        * @return {void}
+        */
+        appSidebarResize: Y.myc.util.debounce(function(e){
+            e = e || {};
+            Y.log('App View : sidebar resize due to '+e.source);
+            this.get('sidebar').resize(e);
+        }, Y.myc.config('transition.delay')*1000),
+        /**
+        * render sidebar, onebox, map and update layout
+        * @method render
+        * @return {void}
+        */
+        render: function(){
+            var type = Y.myc.util.getURLQueryParam('t') || Y.myc.util.getURLQueryParam('mvt'),
+                t = this;
+
+            if (!Y.myc.util.checkTypeOfURL('d_b_p_bb')) {
+                if (Y.myc.config('locdrop.loadCurrentCityLocation') && Y.myc.config('locdrop.currentCityLocation')) {
+                    t.fire('render',{currentLocation : true});
+                    t.get('router').routing = true;
+                    t.showInitialCurrentLocation();
+                } else {
+                    t.fire('render',{currentLocation : false});
+                }
+            }
+            if (type) {t.get('map').set('mapType', type);}
+            if (!Y.myc.util.checkTypeOfURL('d_b_p')) t.get('onebox').focus();
+            t.get('map').render(function(){
+                Y.log('App View :: Map : Render complete');
+                if (Y.myc.util.getURLQueryParam('trf')) {
+                    t.get('map').initLoadTraffic();
+                }
+            });
+            t.get('onebox').render(); // Only specific to old header users
+            t.get('sidebar').render();
+            t.get('walkthrough') && t.get('walkthrough').render();
+        },
+        /**
+        * Updates sidebar, map, loader height
+        * @method layout
+        * @return {void}
+        */
+        layoutUpdate: function(){
+            // Resize Onebox - Only specific to old header users
+            this.get('onebox').layoutUpdate();
+            // Resize sidebar
+            this.get('sidebar').resize({
+                active : this.get('active')
+            });
+            // Resize Map
+            this.get('map').resize({
+                height : this.get('viewport').height,
+                width : this.get('viewport').width
+            });
+            // Resize loader
+            this.get('loader').resize({
+                height : this.get('body').height,
+                width : this.get('body').width
+            });
+            Y.myc.util.resizeFader();
+        },
+        /**
+        * @method destructor
+        * @return {void}
+        */
+        destructor : function(){
+            this.eventListeners = Y.myc.util._destructor(this.eventListeners);
+        },
+        /**
+        * @method clear
+        * @return {void}
+        */
+        clear : function(){
+            Y.log('App View : Clear called');
+            // reset active state
+            this.set('active','map');
+            this._initCurrentLocationLoaded = false;
+            this.get('locationView').reset();
+            this.get('businessView').reset();
+            this.get('map').clear();
+            this.get('loader').hide();
+            this.get('error').clear();
+            this.get('onebox').clear();
+            if (this.get('currentLocation').disabled !== true) {
+                this.get('currentLocation').clear();
+            }
+            this.fire('clear');
+        },
+        /**
+        * @method updateState
+        * @return {void}
+        */
+        updateState: function(silent,save) {
+            Y.log('App View : Update State called');
+            var t = this;
+            if (t.get('router').forceUpdate) {
+                silent = false;
+                save = false;
+            }
+            t.get('map').map.render(function(){
+                if (!silent) {
+                    var state = {},
+                        view;
+
+                    if (t.get('active')) {
+                        if (t.get('active') === 'place') {
+                            view = t.get('locationView');
+                        } else if (t.get('active') === 'businesses') {
+                            view = t.get('businessView');
+                        } else if (t.get('active') === 'directions') {
+                            view = t.get('directionsView');
+                        }
+                    }
+                    if (view) state = Y.merge(state,view.get('state'));
+                    state = Y.merge(
+                        state,
+                        t.get('onebox').get('state'),
+                        {active:t.get('active')},
+                        t.get('map').get('state')
+                    );
+                    if (t.get('sidebar').get('state') === "maximized") {
+                        state = t.get('map').updateCenterForLeftRail(state);
+                        state.bb = t.get('map').getVirtualBBox(state.bb, true);
+                    } else {
+                        state.bb = t.get('map').getVirtualBBox(state.bb, false);
+                    }
+                    t.fire('state:change', {state:state, save: save || false});
+                }
+            });
+        }
+    });
+
+    Y.namespace('myc.App');
+    Y.myc.App.View = AppView;
+
+}, '@VERSION@',{
+    requires:[
+        'node',
+        'myc-app-button-css',
+        'myc-app-sidebar-view',
+        'myc-app-loader-view',
+        'myc-app-templates',
+        'myc-app-onebox-view',
+        'myc-weather-model',
+        'myc-map-view',
+        'myc-location-view',
+        'myc-businesses-view',
+        'myc-directions-view',
+        'myc-context-menu-view',
+        'myc-error-view',
+        'myc-locdrop-model',
+        'myc-currloc',
+        'myc-app-router',
+        'myc-instrumentation-plugin',
+        'myc-walkthrough-view',
+        'myc-util'
+    ]
+});

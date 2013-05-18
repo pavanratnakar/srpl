@@ -1,0 +1,23 @@
+<div class="context-menu menu-container" style="display: none">
+	<ul class="menu-list">
+		<li class="menu-item zoom-in">
+			<button class="noborder">Zoom In</button>
+		</li>
+		<li class="menu-item zoom-out">
+			<button class="noborder">Zoom Out</button>
+		</li>
+		<li class="menu-item center-here">
+			<button class="noborder">Center Map here</button>
+		</li>
+		<li class="menu-item directions-from">
+			<button class="noborder">Directions From</button>
+		</li>
+		<li class="menu-item directions-to">
+			<button class="noborder">Directions To</button>
+		</li>
+		<li class="menu-item report">
+			<button class="noborder">Report a problem</button>
+		</li>
+	</ul>
+		
+</div>

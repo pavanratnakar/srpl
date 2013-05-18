@@ -1,0 +1,26 @@
+<div class="pagination">
+	Results <%= start %> to <%= end %> of <%= total %>
+	<ul>
+		<% if(previous) { %>
+		<li>
+			<button title="Previous" type="button" class="noborder previous"><span>Prev</span></button>
+		</li>
+		<%
+		}
+		for(var i=navStart;i<(navStart + navCount);i++) {
+		%>
+		<li>
+			<button title="<%= i %>" type="button" data-paginate="<%=i%>" class="noborder paginate <%= (i===selected) ? 'active' : '' %>" <%= (i===selected) ? 'disabled=""' : '' %>>
+				<%= i %>
+			</button>
+		</li>
+		<%
+		}
+		if(next) {
+		%>
+		<li>
+			<button title="Next" type="button" class="noborder next"><span>Next</span></button>
+		</li>
+		<% } %>
+	</ul>
+</div>

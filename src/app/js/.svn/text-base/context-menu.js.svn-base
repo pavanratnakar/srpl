@@ -1,0 +1,219 @@
+/**
+ * Create a new myc-context-menu view class that extends Y.View and renders the context menu on right click on map
+ * @module myc-context-menu-view
+ * @requires
+    view,
+    myc-app-templates,
+    myc-config
+*/
+YUI.add('myc-context-menu-view',function(Y){
+
+    var ContextMenuView = function(){
+        ContextMenuView.superclass.constructor.apply(this, arguments);
+    };
+
+    // Attributes and static properties for myc-context-menu View.
+    ContextMenuView.ATTRS = {
+        position: {
+            value: {
+                x: 0,
+                y: 0
+            }
+        },
+        geoPosition: {
+            value: null
+        },
+        zoomLevel: {
+            value: 10
+        },
+        directionOptions : null
+    };
+
+    ContextMenuView.NAME = 'contextMenuView';
+    ContextMenuView.NS = 'app';
+
+    Y.extend(ContextMenuView, Y.View, {
+        // Assign base template that will be used to render view
+        template: Y.myc.App.templates.context_menu,
+        events:{
+            '.menu-list':{
+                'contextmenu': '_contextmenu'
+            },
+            '.menu-item button':{
+                'focus': '_focus',
+                'mouseenter': '_focus',
+                'blur': '_blur',
+                'mouseleave': '_blur',
+                'click': '_select'
+            },
+            '.close':{
+                'click': 'hide'
+            }
+        },
+        /**
+        * The initializer function will run when a view is instantiated
+        * @method initializer
+        * params {hash} config
+        * @return {void}
+        */
+        initializer: function(config){
+            Y.one('body').appendChild(this.template());
+            this.set('container', Y.one('.context-menu'));
+        },
+        /**
+        * Handle the right click on the map viewport and let the caller know of how to handle it
+        * @method handleContextMenuClick
+        * @return {boolean} true - show custom, false - show default
+        */
+        onContextMenu: function(target){
+            // Check if we are on a marker
+            var markerAncestor = target.ancestor('.yui3-marker', true),
+                controlsAncestor = target.ancestor('.ymap-controlsBody', true);
+
+            return !(markerAncestor||controlsAncestor);
+        },
+        /**
+        * show context menu
+        * @method render
+        * @return {void}
+        */
+        render: function(){
+            var t= this,
+                contextMenu = Y.one('.context-menu'),
+                cmWidth = parseInt(contextMenu.getComputedStyle('width'),10) || 127, // using the default width in case it's not rendered
+                cmHeight = parseInt(contextMenu.getComputedStyle('height'),10) || 174, // using the default height in case it's not renderd
+                _left = t.get('position').x,
+                _top = t.get('position').y;
+
+            if (parseInt(Y.one('body').getComputedStyle('width'),10) < (_left + cmWidth)) {
+                _left = _left - cmWidth;
+            }
+
+            if (parseInt(Y.one('body').getComputedStyle('height'),10) < (_top + cmHeight)) {
+                _top = _top - cmHeight;
+            }
+
+            contextMenu.setStyles({
+                left: _left,
+                top: _top
+            });
+
+            // Disable Zoom Out at min zoom
+            if (t.get('zoomLevel') === 1) {
+                contextMenu.one('.zoom-out').addClass('disabled');
+            } else {
+                contextMenu.one('.zoom-out').removeClass('disabled');
+            }
+
+            // Disable Zoom In at max zoom
+            if (t.get('zoomLevel') === 20) {
+                contextMenu.one('.zoom-in').addClass('disabled');
+            } else {
+                contextMenu.one('.zoom-in').removeClass('disabled');
+            }
+
+            if (t.get('directionOptions') === false) {
+                contextMenu.one('.directions-from').addClass('disabled');
+                contextMenu.one('.directions-to').addClass('disabled');
+            } else {
+                contextMenu.one('.directions-from').removeClass('disabled');
+                contextMenu.one('.directions-to').removeClass('disabled');
+            }
+
+            contextMenu.show();
+            contextMenu.focus();
+        },
+        /**
+        * hide context menu
+        * @method hide
+        * @return {void}
+        */
+        hide: function(){
+            var t= this,
+                contextMenu = Y.one('.context-menu');
+            contextMenu.hide();
+        },
+        /**
+        * focus menu item
+        * @method _focus
+        * @return {void}
+        */
+        _focus:function(e){
+            var parentNode = e.currentTarget.get('parentNode');
+            parentNode.addClass('hover').siblings().removeClass('hover');
+        },
+        /**
+        * blur menu item
+        * @method _blur
+        * @return {void}
+        */
+        _blur:function(e){
+            var parentNode = e.currentTarget.get('parentNode');
+            parentNode.removeClass('hover');
+        },
+        /**
+        * select menu item
+        * @method _select
+        * @return {void}
+        */
+        _select: function(e){
+            var t = this,
+                menuItem = e.currentTarget,
+                parentNode =  menuItem.get('parentNode');
+
+            if (menuItem.hasClass('disabled')) {
+                return; // in case it is disabled just ignore the click on it
+            }
+            t.hide();
+            if (parentNode.hasClass('zoom-in')) {
+                t.fire('menu:zoom:in',{
+                    geo: t.get('geoPosition')
+                });
+            }
+            if (parentNode.hasClass('zoom-out')) {
+                t.fire('menu:zoom:out',{
+                    geo: t.get('geoPosition')
+                });
+            }
+            if (parentNode.hasClass('center-here')) {
+                t.fire('menu:center:here',{
+                    geo: t.get('geoPosition')
+                });
+            }
+            if (parentNode.hasClass('directions-from')) {
+                t.fire('menu:directions:from',{
+                    geo: t.get('geoPosition')
+                });
+            }
+            if (parentNode.hasClass('directions-to')) {
+                t.fire('menu:directions:to',{
+                    geo: t.get('geoPosition')
+                });
+            }
+            if (parentNode.hasClass('report')) {
+                window.open(Y.myc.config('report.url'));
+            }
+        },
+        /**
+         * _contextmenu
+         * @param  {object} e
+         * @return {void}
+        */
+        _contextmenu: function(e){
+            if (e.button === 3) {
+                e.preventDefault();
+                return;
+            }
+        }
+    });
+
+    Y.namespace('myc.Context.Menu');
+    Y.myc.Context.Menu.View = ContextMenuView;
+
+}, '@VERSION@',{
+    requires:[
+        'view',
+        'myc-app-templates',
+        'myc-config'
+    ]
+});

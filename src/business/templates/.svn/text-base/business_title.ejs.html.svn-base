@@ -1,0 +1,8 @@
+<div class="title clearfix">
+	<h4 class="name f-left">
+		<%= b.displayValue() %>
+	</h4>
+	<% if (moreInfo === true) {%>
+	<a class="more-info" title="more info" target="_blank" href="<%= b.get('detailurl') %>">more info</a>
+	<% } %>
+</div>

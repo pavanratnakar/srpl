@@ -1,0 +1,182 @@
+YUI.add('myc-ymaps-route-ui', function(Y){
+
+    var UNDEF = 'undefined',
+        FALSE = false,
+        util = Y.YMaps.Util,
+        ZOOMTHREASHOLD = 5;
+
+    var RouteUI = function(){
+        RouteUI.superclass.constructor.apply(this, arguments);
+    };
+
+    RouteUI.NAME = 'myc-route-ui';
+    Y.extend(RouteUI, Y.YMaps.RouteUI, {
+        getRoute: function(conf, callback){
+            this.onceAfter('route:routeEnded', function(e){
+                (callback || function(){})(!e[0] ? 'no route found' : null, e);
+            });
+            Y.YMaps.RouteUI.prototype.getRoute.apply(this, arguments);
+            // Y.bind(_getRoute, this, conf)();
+        },
+        draw: function(callback){
+            this.onceAfter('routeUI:drawEnd', (callback||function(){})());
+            Y.YMaps.RouteUI.prototype.draw.apply(this, arguments);
+        },
+        getQueryOptions: function(conf) {
+            // sunilpai - edited this to not have ts in the url, so as to allow caching
+            // ts is not used any more anyway
+            // no op
+            var queryOptions,
+                wayptParam,
+                param,
+                attrs,
+                valueMap = {},
+                cbWest,
+                cbEast,
+                hasPassWaypt,
+                len = this._wayPointList.length,
+                i,
+                ts = new Date().getTime();
+                
+            if ((this.get('endAdd') ==='' || this.get('startAdd') ==='') &&
+                (this.get('origEndAdd') ==='' || this.get('origStartAdd') ==='')) {
+                this.fire('error', {code:405});
+                return FALSE;
+            } else{
+                if (((typeof this.get('startLat') === UNDEF) ||
+                    this.get('startLat') === "" ||
+                    (typeof this.get('startLon') === UNDEF) ||
+                     this.get('startLon') === "" ||
+                    (typeof this.get('endLat') === UNDEF) ||
+                     this.get('endLat') === "" ||
+                    (typeof this.get('endLon') === UNDEF) ||
+                    this.get('endLon') === "" )&& (
+                         typeof this.get('origStartAdd') === UNDEF ||
+                            typeof this.get('origEndAdd') === UNDEF )) {
+                    this.set('origStartAdd', this.get('startAdd'));
+                    this.set('origEndAdd', this.get('endAdd'));
+                    this.set('startAdd', "");
+                    this.set('endAdd', "");
+                }
+                    
+                attrs = this.getAttrs();
+                for (param in attrs) {
+                    if (typeof attrs[param] !== UNDEF &&
+                        attrs[param] !== "" && attrs.hasOwnProperty(param)) {
+                        //vehicle type is mapping to
+                        if (param === 'vehicleType') {
+                            valueMap[param] = this.translator.vehicleTypes[attrs[param]];
+                            // Y.log("vehicle type " + attrs[param] + " " + this.translator.vehicleTypes[attrs[param]]);
+                        } else {
+                            valueMap[param] = attrs[param];
+                        }
+                    }
+                }
+                queryOptions = util.encodeParams(this.translator.keyMap, valueMap);
+                wayptParam = this.getWayPointParam();
+                if (typeof wayptParam !== UNDEF) {
+                    queryOptions += wayptParam;
+                }
+                
+                if (typeof conf !== UNDEF) {
+                    //add geometry clip box if the route distance is longer then 300 miles
+                    if ((typeof conf.tr !== UNDEF) && (typeof conf.bl !== UNDEF)) {
+                        cbWest = conf.bl.get('lon');
+                        cbEast = conf.tr.get('lon');
+
+                        // Check for a viewport bounding box that extends over the dateline.
+                        if(cbWest > cbEast){
+                            cbWest -= 360;
+                        }
+                        //check if we have pass throught waypoint, if we have, don't swap route bounding box with viewport bounding box
+                        for (i=0; i < len; i+=1) {
+                            if (!this._wayPointList[i].get('stopOver')) {
+                                hasPassWaypt = true;
+                                break;
+                            }
+                        }
+                        //compare the clip box with route bounding box,
+                        //if clip east larger than route east, use route east
+                        //if clip west smaller than route west, use route west
+                        //this is to prevent clip box cross 0 or 180 meridian
+                        if (!hasPassWaypt) {
+                            if (cbEast > this._bbox[0].get('lon')) {
+                                cbEast = this._bbox[0].get('lon');
+                            }
+                            if (cbWest < this._bbox[1].get('lon')) {
+                                cbWest = this._bbox[1].get('lon');
+                            }
+                        }
+                        //if zoom level is smaller then threashold, don't have to use clipbox, the geometry data amount won't be large.
+                        if (this.get('zoomLevel') > ZOOMTHREASHOLD) {
+                            queryOptions += '&north=' + conf.tr.get('lat') + '&east=' + cbEast + '&south=' + conf.bl.get('lat') + '&west=' + cbWest;
+                        }
+                    }
+                    //add viewport width and height for the first route request to get zoom level from GWS
+                    if ((typeof conf.width !== UNDEF) && (typeof conf.height !== UNDEF)) {
+                        queryOptions += '&rmw=' + conf.width + '&rmh=' + conf.height;
+                    }
+                }
+                //if there is a route id and request is not from  waypoint add or remove
+                if (this._GWSRouteId && !this._wayptChanged) {
+                    queryOptions += '&routeid=' + this._GWSRouteId;
+                }
+
+                // add a timestamp
+                // @sunilpai - removed the ts option since it was disabling caching
+                // queryOptions += "&ts=" + ts;
+
+
+                // save the timestamp so we can compare against it later
+                this.ts = ts;
+
+                return queryOptions;
+            }
+        }
+    });
+
+    Y.namespace('myc');
+    Y.myc.RouteUI = RouteUI;
+
+    // now make deferreds of the same
+    function RouteUIDeferred(){
+        RouteUIDeferred.superclass.constructor.apply(this, arguments);
+    }
+
+    RouteUIDeferred.NS = 'deferred';
+
+    Y.extend(RouteUIDeferred, Y.Promise, {
+        getRoute:function(conf){
+            var deferred = this.defer(function(promise){
+                this.host.getRoute(conf, function(err, data){
+                    if(err) {
+                        promise.reject(err);
+                        return;
+                    }
+                    promise.resolve(data);
+                });
+            });
+            return deferred;
+        },
+        draw:function(){
+            var deferred = this.defer(function(promise){
+                this.host.draw(function(){promise.resolve();});
+            });
+            return deferred;
+        },
+        /**
+         * Imports a method from Y.YMaps.RouteUI making it chainable but not returning promises
+         * @method importMethod
+         * @param {String} method Name of the method to import from Y.YMaps.RouteUI
+         * @static
+         */
+        importMethod: function(method) {
+            RouteUIDeferred.prototype[method] = function () {
+                this.host[method].apply(this.host, arguments);
+                return this;
+            };
+        }
+    });
+
+    Y.Plugin.RouteUIDeferred = RouteUIDeferred;
+}, '@VERSION@', {requires:['ymaps-route-ui', 'myc-deferred', 'plugin']});

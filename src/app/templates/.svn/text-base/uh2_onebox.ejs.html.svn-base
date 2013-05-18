@@ -1,0 +1,12 @@
+<div id="myc-one-box-search" class="clearfix">
+    <form accept-charset="utf-8" method="get">
+        <div class="input-node f-left">
+            <input class="search search-icon" type="text"/>
+        </div>
+        <input type="text" style="display:none" />
+        <div class="form-buttons f-right">
+            <input type="button" class="f-left form-submit blue" value="Search Maps"/>
+            <input type="button" class="f-left y-search regular" value="Search Web"/>
+        </div>
+    </form>
+</div>

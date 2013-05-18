@@ -1,0 +1,155 @@
+/************************************************************************
+    SRPL Global Properties
+************************************************************************/
+
+.srpl{
+    font:               13px/1.231 "Helvetica Neue",Helvetica,Arial,sans-serif;
+    color:              #5F5F5F;
+    background-color:   #F5F7F9;
+    height:             100%;
+    margin:             0;
+    padding:            0;
+}
+
+.srpl a {
+    text-decoration:    none;
+    color:              #1D1DA3;
+}
+
+.srpl a:hover,
+.srpl a:focus{
+    text-decoration:    underline;
+    outline:            none;
+}
+
+.srpl select,
+.srpl input,
+.srpl button,
+.srpl textarea {
+    font-family:        "Helvetica Neue",Helvetica,Arial,sans-serif;
+}
+
+.srpl .close{
+    cursor:             pointer;
+}
+
+.srpl .bold {
+    font-weight:        bold;
+}
+
+.srpl .f-left{
+    float:              left;
+    display:            inline;
+}
+
+.srpl .f-right{
+    float:              right;
+    display:            inline;
+}
+
+.srpl .clear{
+    clear:              both;
+}
+
+.srpl .wrap {
+    white-space:        pre;           /* CSS 2.0 */
+    white-space:        pre-wrap;      /* CSS 2.1 */
+    white-space:        pre-line;      /* CSS 3.0 */
+    white-space:        -pre-wrap;     /* Opera 4-6 */
+    white-space:        -o-pre-wrap;   /* Opera 7 */
+    white-space:        -moz-pre-wrap; /* Mozilla */
+    word-wrap:          break-word;    /* IE 5+ */
+}
+
+.srpl .no-focus:focus{
+    outline:            none; /* remove default focus border */
+}
+
+/************************************************************************
+    Clear Fix
+************************************************************************/
+
+.srpl .clearfix:after {
+    content: ".";
+    display: block;
+    clear: both;
+    visibility: hidden;
+    line-height: 0;
+    height: 0;
+}
+             
+.srpl .clearfix {
+    display: inline-block;
+}
+             
+html[xmlns] .srpl .clearfix {
+    display: block;
+}
+             
+* html .srpl .clearfix {
+    height: 1%;
+}
+
+/************************************************************************
+    End of Clear Fix
+************************************************************************/
+
+/************************************************************************
+    Start of Actions
+************************************************************************/
+
+.srpl ul.actions{
+    padding:            0.769em 0 0 0;
+}
+
+.srpl .actions li.first-child,
+.srpl .actions li.first-child button{
+    padding-left:       0;
+}
+
+.srpl .actions li.last-child{
+    border:             none;
+    padding-right:      0;
+}
+
+.srpl .actions li button{
+    padding:            0;
+    color:              #324FE1;
+    font-size:          11px;
+    line-height:        13px;
+}
+
+.srpl .actions li{
+    padding:            0 0.692em;
+    display:            inline;
+    float:              left;
+    vertical-align:     middle;
+    position:           relative;
+}
+
+.srpl .actions button:focus,
+.srpl .actions input[type="button"]:focus{
+    outline:            none;
+}
+
+/************************************************************************
+    End of Actions
+************************************************************************/
+
+/************************************************************************
+    End of SRPL Global Properties
+************************************************************************/
+
+/************************************************************************
+    SRPL App Properties
+************************************************************************/
+
+#srpl-wrapper-container {
+    width:              900px;
+}
+
+/************************************************************************
+    End of SRPL App Properties
+************************************************************************/
+/* YUI CSS Detection Stamp */
+#yui3-css-stamp.srpl-app-css { display: none; }

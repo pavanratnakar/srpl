@@ -1,0 +1,168 @@
+/************************************************************************
+    Start of marker-label-icons.css
+************************************************************************/
+
+.srpl .icon {
+    color:                  #fff;
+}
+
+.srpl .icon .i_left{
+    width:                  4px;
+    height:                 21px;
+    float:                  left;
+    display:                inline;
+}
+
+.srpl .icon .i_center {
+    width:                  13px;
+    height:                 31px;
+    text-align:             center;
+    font-size:              11px;
+    line-height:            21px;
+    font-weight:            bold;
+    float:                  left;
+    display:                inline;
+    position:               relative;
+}
+
+.srpl .icon .i_right{
+    width:                  5px;
+    height:                 21px;
+    float:                  left;
+    display:                inline;
+}
+
+.srpl .icon .star,
+.srpl .yui3-myc-marker .yui3-marker-content .star {
+    background:             url(../../app/img/myc.png) no-repeat 0 -744px;
+    width:                  15px;
+    height:                 14px;
+    position:               absolute;
+    top:                    2px;
+    left:                   -1px;
+}
+
+.srpl .yui3-myc-marker.ymaps-marker-focused .ymaps-marker-label .star{
+    top:                    6px;
+    left:                   0px;
+}
+
+.srpl .icon.green .i_left,
+.srpl .yui3-myc-marker.myc-marker-green.ymaps-marker-small .left {
+    background:             url(../../app/img/myc.png) no-repeat 0 -373px;
+    display:                block;
+}
+
+.srpl .yui3-myc-marker.myc-marker-green.ymaps-marker-focused .left {
+    background:             url(../../app/img/myc.png) no-repeat 0 -1334px;
+    display:                block;
+}
+
+.srpl .icon.green .i_center,
+.srpl .yui3-myc-marker.myc-marker-green.ymaps-marker-small .yui3-marker-content{
+    background:             url(../../app/img/myc.png) no-repeat 0 -293px;
+    display:                block;
+}
+
+.srpl .yui3-myc-marker.myc-marker-green.ymaps-marker-focused .yui3-marker-content {
+    background:             url(../../app/img/myc.png) no-repeat 0 -1230px;
+    display:                block;
+}
+
+.srpl .icon.green .i_right,
+.srpl .yui3-myc-marker.myc-marker-green.ymaps-marker-small .right {
+    background:             url(../../app/img/myc.png) no-repeat 0 -337px;
+    display:                block;
+}
+
+.srpl .yui3-myc-marker.myc-marker-green.ymaps-marker-focused .right {
+    background:             url(../../app/img/myc.png) no-repeat 0 -1287px;
+    display:                block;
+}
+
+.srpl .yui3-myc-marker.myc-marker-blue.ymaps-marker-focused .right {
+    background:             url(../../app/img/myc.png) no-repeat 0 -1435px;
+    display:                block;
+}
+
+/************************************************************************
+    End of marker-label-icons.css
+************************************************************************/
+
+/************************************************************************
+    Start of pagination.css
+************************************************************************/
+
+.srpl .pagination{
+    text-align:     center;
+}
+
+.srpl .pagination ul{
+    margin:         12px 0 0 0;
+}
+
+.srpl .pagination ul li{
+    display:        inline-block;
+    padding:        0;
+    zoom:           1;
+    *display:       inline;
+    letter-spacing: normal;
+}
+
+.srpl .pagination button{
+    padding:        0;
+    color:          #324FE1;
+    font-size:      13px;
+}
+
+.srpl .pagination button.paginate {
+    height:         24px;
+    width:          30px;
+    border:         1px solid #FFF;
+}
+
+.srpl .pagination button.paginate:hover,
+.srpl .pagination button.paginate.active {
+    border:         1px solid #E2E2E6;
+    background:     #FAFAFC;
+    text-decoration: none;
+}
+
+.srpl .pagination button.paginate.active {
+    font-weight:    bold;
+    color:          #3F3F3F;
+}
+
+/************************************************************************
+    End of pagination.css
+************************************************************************/
+
+/************************************************************************
+    Start of rating.css
+************************************************************************/
+.srpl .rating-static {
+    width:      75px;
+    height:     14px;
+    display:    block;
+    background: url(../../app/img/myc.png) 0 0 no-repeat;
+    line-height:0;
+    font-size:  0;
+}
+.srpl .rating-50 { background-position: 0 -1187px; }
+.srpl .rating-40 { background-position: 0 -1163px; } 
+.srpl .rating-30 { background-position: 0 -1138px; }
+.srpl .rating-20 { background-position: 0 -1114px; }
+.srpl .rating-10 { background-position: 0 -1088px; }
+.srpl .rating-0 { background-position: 0 -1064px; }
+ 
+.srpl .rating-5  { background-position: 0 -1036px; }
+.srpl .rating-15 { background-position: 0 -1009px; }
+.srpl .rating-25 { background-position: 0 -982px; }
+.srpl .rating-35 { background-position: 0 -955px; }
+.srpl .rating-45 { background-position: 0 -926px; }
+/************************************************************************
+    End of rating.css
+************************************************************************/
+
+/* YUI CSS Detection Stamp */
+#yui3-css-stamp.srpl-lib-css { display: none; }

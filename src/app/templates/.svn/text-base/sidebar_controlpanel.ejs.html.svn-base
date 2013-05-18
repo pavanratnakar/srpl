@@ -1,0 +1,20 @@
+<div id="myc-sidebar-controlpanel" class="sidebar-controlpanel">
+	<ul class="main-options">
+		<li>
+			<button title="Get Directions" type="button" class="regular directions-option shadow">Get Directions</button>
+		</li>
+	</ul>
+	<ul class="tools">
+		<li class="clearfix">
+			<button title="Print" type="button" class="f-left regular print first-child">
+				<i></i>
+				<span class="hide-text">Print</span>
+			</button>
+			<div class="divider f-left"></div>
+			<button title="Share" type="button" aria-haspopup="true" class="f-left regular share last-child">
+				<i></i>
+				<span class="hide-text">Share</span>
+			</button>
+		</li>
+	</ul>
+</div>

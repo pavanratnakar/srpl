@@ -1,0 +1,30 @@
+<div class="srcpl-hero-container">
+    <img class="hero" src="<%= b.get('herophoto') %>" alt="<%= b.displayValue() %>"/>
+    <div class="srcpl-hero-content-container">
+        <h1><%= b.displayValue() %></h1>
+        <h2><%= b.get('ycatsprimary').data[0].name %></h2>
+        <% if (b.get('rating') && !isNaN(b.get('rating'))) { %>
+        <p class="rating-review">
+            <a target="_blank" href="<%= b.get('readreviewsurl') %>">
+                <span class="rating-static f-left rating-<%= (b.get('rating')*10) %>">
+                    <%= b.get('rating') %> out of 5 stars
+                </span>
+                <% if (b.get('nreview')) {%>
+                (<span class="review">based on </span><%= b.get('nreview') %> reviews)
+                <% } %>
+            </a>
+        </p>
+        <% } if (b.address()) {%>
+        <p class="adr"><%= b.address() %></p>
+        <% } if (b.get('phone')) {%>
+        <p class="tel"><%= b.get('phone') %></p>
+        <% } if (b.get('website') && b.get('website')['$']) {%>
+        <p class="web">
+            <a href="<%= b.get('website')['$'] %>" target="_blank" class="url" title="<%= b.get('websitelabel') || b.get('website')['@label'] %>">
+                <%= b.get('webLabel') %>
+            </a>
+        </p>
+        <% } %>
+        <%= Y.srpl.Business.templates.hero_actions() %>
+    </div>
+</div>

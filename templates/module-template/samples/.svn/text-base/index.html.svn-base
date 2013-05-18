@@ -1,0 +1,19 @@
+<!doctype html>
+<html>
+	<head>
+		<title>Sample page for <%=module%></title>
+		<link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/3.5.0/build/cssreset/cssreset-min.css">		
+		<link rel="stylesheet" type="text/css" href="style.css">
+	</head>
+	<body>
+		<div id="container">
+			
+		</div>
+		
+		<!-- you're only allowed to use the manifest.js files here. good sanity test. in prod, deploy combo-->
+		<script src="http://yui.yahooapis.com/3.5.0/build/yui/yui-min.js"></script>
+		<script src="/build/manifest.js"></script>
+		<script src="script.js"></script>
+
+	</body>
+</html>

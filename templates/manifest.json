@@ -1,0 +1,8 @@
+<%= JSON.stringify({
+    lang: config.lang,
+    comboBase : config.comboBase,
+    root: config.root || ((config.versionify? config.version : config.target) + '/' ),
+    combine: config.combine,
+    base: path.join(config.base, config.versionify? config.version : config.target) + '/',    // add a trailing slash
+    modules:manifest
+}, null, '    ') %>

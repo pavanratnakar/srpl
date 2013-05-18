@@ -1,0 +1,6 @@
+<div id="myc-main-container">
+    <%= Y.myc.App.templates.sidebar_controlpanel() %>
+    <div id="myc-sidebar-content" class="sidebar-content" style="display:none;"></div>
+    <div id="myc-map" class="map"></div>
+</div>
+<%= Y.myc.App.templates.footer() %>
