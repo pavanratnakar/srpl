@@ -15,9 +15,7 @@ YUI.add('srpl-app-loader-view',function(Y){
     };
     // Attributes and static properties for srpl-app-loader View.
     AppLoaderView.ATTRS = {
-        container : '',
-        app : '',
-        wait : ''
+        container : ''
     };
 
     AppLoaderView.NAME = 'appLoaderView';
@@ -26,30 +24,6 @@ YUI.add('srpl-app-loader-view',function(Y){
     Y.extend(AppLoaderView, Y.View, {
         // Assign base template that will be used to render view
         template: Y.srpl.App.templates.loader,
-        /**
-        * @method cancelWait
-        * @return {void}
-        */
-        cancelWait : function(){
-            if (this.get('wait')) {
-                this.get('wait').cancel();
-            }
-        },
-        /**
-        * @method countDown
-        * @return {void}
-        */
-        countDownBegin : function(){
-            var t = this;
-
-            t.cancelWait();
-            t.set('wait',Y.later( Y.srpl.config('loader.timer'), {}, function () {
-                if (!Y.srpl.util.checkNodeHidden(t.get('container'))) {
-                    t.hide();
-                    t.fire('error');
-                }
-            }));
-        },
         /**
         * The initializer function will run when a view is instantiated
         * @method initializer
@@ -68,11 +42,9 @@ YUI.add('srpl-app-loader-view',function(Y){
             this.get('container').setStyles({
                 display : 'block',
                 visibility : 'visible',
-                height : this.get('app').get('body').height,
-                width :  this.get('app').get('body').width
+                height : Y.one('body').height,
+                width :  Y.one('body').width
             });
-            Y.all('.ymap-tilebody').addClass('blurry');
-            this.countDownBegin();
         },
         /**
         * hide loader
@@ -81,7 +53,6 @@ YUI.add('srpl-app-loader-view',function(Y){
         */
         hide: function(){
             this.get('container').hide();
-            Y.all('.ymap-tilebody').removeClass('blurry');
         },
         /**
         * resize loader container
@@ -102,6 +73,7 @@ YUI.add('srpl-app-loader-view',function(Y){
 }, '@VERSION@',{
     requires:[
         'node',
+        'srpl-app-loader-css',
         'srpl-app-templates',
         'srpl-util',
         'srpl-config'

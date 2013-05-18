@@ -135,11 +135,129 @@ html[xmlns] .srpl .clearfix {
 ************************************************************************/
 
 /************************************************************************
+    Fader
+************************************************************************/
+#srpl-fader-container{
+    display:            none;
+    left:               0;
+    margin:             0;
+    padding:            0;
+    position:           fixed;
+    text-align:         left;
+    top:                0;
+    visibility:         hidden;
+    z-index:            10000;
+}
+
+#srpl-fader-overlay {
+    height:             100%;
+    position:           relative;
+    width:              100%;
+    background:         #fff;
+    /* Firefox */
+    -moz-transition-property: opacity;
+    -moz-transition-duration: 2s;
+    -moz-transition-delay: 1s;
+    /* WebKit */
+    -webkit-transition-property: opacity;
+    -webkit-transition-duration: 2s;
+    -webkit-transition-delay: 1s;
+    /* Opera */
+    -o-transition-property: opacity;
+    -o-transition-duration: 2s;
+    -o-transition-delay: 1s;
+
+    -ms-transition-property: opacity;
+    -ms-transition-duration: 2s;
+    -ms-transition-delay: 1s;
+    /* Standard */
+    transition-property: opacity;
+    transition-duration: 2s;
+    transition-delay: 1s;
+    opacity:            0;
+    filter:alpha(opacity=0);
+}
+
+#srpl-fader-overlay.anim{
+    /* Firefox */
+    -moz-transition-property: opacity;
+    -moz-transition-duration: 2s;
+    -moz-transition-delay: 1s;
+    /* WebKit */
+    -webkit-transition-property: opacity;
+    -webkit-transition-duration: 2s;
+    -webkit-transition-delay: 1s;
+    /* Opera */
+    -o-transition-property: opacity;
+    -o-transition-duration: 2s;
+    -o-transition-delay: 1s;
+
+    -ms-transition-property: opacity;
+    -ms-transition-duration: 2s;
+    -ms-transition-delay: 1s;
+    /* Standard */
+    transition-property: opacity;
+    transition-duration: 2s;
+    transition-delay: 1s;
+    opacity:            .5;
+    filter:alpha(opacity=50);
+}
+
+/************************************************************************
+    End of Fader
+************************************************************************/
+
+/************************************************************************
     End of SRPL Global Properties
 ************************************************************************/
 
 /************************************************************************
     SRPL App Properties
+************************************************************************/
+
+/************************************************************************
+    SRPL Overlay Properties
+************************************************************************/
+
+.srpl-overlay {
+    background-color:   #fff;
+    border-color:       #d3d3d3;
+    border-width:       1px;
+    border-style:       solid;
+    -moz-box-shadow:    1px 1px 3px rgba(0, 0, 0, 0.2);
+    -webkit-box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+    box-shadow:         1px 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.srpl-overlay .srpl button.overlay-button,
+.srpl-overlay .srpl button.overlay-button.image {
+    position:           absolute;
+    background-color:   grey;
+    padding:            10px;
+    text-align:         center;
+    -webkit-border-radius:4px;
+    border-radius: 4px;
+    -moz-border-radius: 4px;
+    -khtml-border-radius:4px;
+}
+
+.srpl-overlay .srpl button.prev {
+    top:               50%;
+    left:              -26px;
+}
+
+.srpl-overlay .srpl button.next {
+    top:               50%;
+    right:             -26px;
+}
+
+.srpl-overlay .close {
+    top:                0;
+    right:              -20px;
+}
+
+/************************************************************************
+    End of SRPL Overlay Properties
 ************************************************************************/
 
 #srpl-wrapper-container {

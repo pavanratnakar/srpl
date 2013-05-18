@@ -22,7 +22,11 @@ YUI.add('srpl-business-view', function(Y){
         template: Y.srpl.Business.templates.base,
         eventListners : [],
         // Specify delegated DOM events to attach to the srpl-business container.
-        events:{},
+        events:{
+            'li .directions':{
+                'click':     'directionsClick'
+            }
+        },
         /**
         * The initializer function will run when a view is instantiated
         * @method initializer
@@ -102,6 +106,18 @@ YUI.add('srpl-business-view', function(Y){
         */
         destructor: function(){
             this.eventListeners = Y.srpl.util._destructor(this.eventListeners);
+        },
+
+        // -- Event Handlers -------------------------------------------------------
+
+        /**
+        * @method directionsClick
+        * @params {e} e
+        * @return {void}
+        */
+        directionsClick: function(e){
+            var b = this.get('business');
+            window.open('http://maps.yahoo.com/directions/?lat='+b.getLatitude()+'&lon='+b.getLongitude()+'&zoom='+Y.srpl.config('ymaps.zoomThresholdLevel')+'&d='+encodeURIComponent(b.getNamedAddress()),Y.srpl.config('linking.target'))
         }
     });
 

@@ -4,7 +4,8 @@ YUI.add('srpl-app-templates', function(Y){
 Y.namespace('srpl.App');
 Y.srpl.App.templates = {
     aria:Y.template('<div id="<%=id%>-aria-container" aria-live="polite"></div>'),
-		base:Y.template('<div id="srpl-wrapper-container" class="srpl">\n	<ul id="srpl-container"></ul>\n<!-- 	<button class="image close">Close</button> -->\n</div>'),
+		base:Y.template('<div id="srpl-wrapper-container" class="srpl">\n	<button class="image prev overlay-button">Previous</button>\n	<ul id="srpl-container"></ul>\n	<button class="image next overlay-button">Next</button>\n	<button class="image close overlay-button">Close</button>\n</div>'),
+		fader:Y.template('<div id="srpl-fader-container">\n	<div id="srpl-fader-overlay"></div>\n</div>'),
 		loader:Y.template('<div id="srpl-loader-container">\n	<div class="loader big"></div>\n</div>')
 };
 }, '@VERSION@',{

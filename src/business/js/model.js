@@ -94,8 +94,14 @@ YUI.add('srpl-business-model', function(Y){
         * @return {string} dtitle
         */
         displayValue:function(){
-            //return this.get('title'); // switched to dtitle as title has html tag present within it
             return this.get('dtitle');
+        },
+        /**
+        * @method getNamedAddress
+        * @return {string} displayValue+address
+        */
+        getNamedAddress : function(term){
+            return this.displayValue()+(term || ', ')+this.address();
         },
         /**
         * get business specific address

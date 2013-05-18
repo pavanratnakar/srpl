@@ -163,7 +163,6 @@ YUI.add('srpl-util',function(Y){
         */
         hideFader : function(){
             Y.one('#srpl-fader-overlay').removeClass('anim');
-            // [bug 5904046]
             Y.one('#srpl-fader-container').hide();
         },
         /**

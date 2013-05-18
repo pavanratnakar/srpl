@@ -37,7 +37,8 @@ YUI.add('srpl-config', function(Y){
         },
         containers : {
             main : '#srpl-wrapper-container',
-            business : '#srpl-container'
+            business : '#srpl-container',
+            loader : '#srpl-loader-container'
         },
         srpl:{
             version:'@VERSION@',
@@ -67,6 +68,9 @@ YUI.add('srpl-config', function(Y){
         },
         misc: {
             cache:48*60*60*1000
+        },
+        linking: {
+            target : '_blank'
         }
     };
 

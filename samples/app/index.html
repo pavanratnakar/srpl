@@ -58,9 +58,9 @@
         document.documentElement.className = document.documentElement.className.replace( /\bno-js\b/, '' );
         </script>
     </head>
-    <body>
+    <body style="background-color:#000;height:100%;width:100%;">
+        <div style="background-color:#555;height:500px;width:100%;">Test backgrond</div>
         <div id="wrapper">
-            <div class="loader big"></div>
             <div id="myc-no-js" style="display:none;">
                 <p>You need to have Javascript enabled in order to use the newest version of Yahoo! Maps</p>
             </div>
@@ -75,7 +75,8 @@
             var app;
             YUI().use('srpl-app-view',function(Y){
                 app = new Y.srpl.App.View({
-                    container : '#wrapper'
+                    container : '#wrapper',
+                    overlay : true
                 });
                 app.render();
             });
