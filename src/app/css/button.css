@@ -139,7 +139,7 @@
 .srpl input[type=button].close.image,
 .srpl button.close.image {
     position:               absolute;
-    background:             url('../../app/img/myc.png') no-repeat 0 -143px;
+    background:             url('../app/img/myc.png') no-repeat 0 -143px;
     width:                  9px;
     height:                 9px;
 }

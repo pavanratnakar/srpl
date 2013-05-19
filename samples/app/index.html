@@ -3,7 +3,7 @@
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:og="http://ogp.me/ns#"
     xmlns:fb="https://www.facebook.com/2008/fbml"
-    itemscope itemtype="http://schema.org/">
+    itemscope itemtype="http://schema.org/" style="background-color:purple;height:100%;width:100%;">
   <head>
         <!-- REGULAR META PROERTIES -->
         <meta charset="utf-8">
@@ -58,8 +58,7 @@
         document.documentElement.className = document.documentElement.className.replace( /\bno-js\b/, '' );
         </script>
     </head>
-    <body style="background-color:#000;height:100%;width:100%;">
-        <div style="background-color:#555;height:500px;width:100%;">Test backgrond</div>
+    <body style="height:100%;width:100%;">
         <div id="wrapper">
             <div id="myc-no-js" style="display:none;">
                 <p>You need to have Javascript enabled in order to use the newest version of Yahoo! Maps</p>
@@ -76,8 +75,10 @@
             YUI().use('srpl-app-view',function(Y){
                 app = new Y.srpl.App.View({
                     container : '#wrapper',
-                    overlay : true
+                    overlay : true,
+                    businessess : [27010579,27010574,27010279]
                 });
+                app.set('active','27010579');
                 app.render();
             });
         </script>

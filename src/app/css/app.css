@@ -146,7 +146,7 @@ html[xmlns] .srpl .clearfix {
     text-align:         left;
     top:                0;
     visibility:         hidden;
-    z-index:            10000;
+    z-index:            499;
 }
 
 #srpl-fader-overlay {
@@ -234,7 +234,10 @@ html[xmlns] .srpl .clearfix {
     position:           absolute;
     background-color:   grey;
     padding:            10px;
+    height:             30px;
+    width:              30px;
     text-align:         center;
+    z-index:            501;
     -webkit-border-radius:4px;
     border-radius: 4px;
     -moz-border-radius: 4px;
@@ -262,6 +265,11 @@ html[xmlns] .srpl .clearfix {
 
 #srpl-wrapper-container {
     width:              900px;
+    overflow:           hidden;
+}
+
+#srpl-container{
+    position:           relative;
 }
 
 /************************************************************************

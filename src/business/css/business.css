@@ -1,3 +1,11 @@
+.srpl-business {
+/*    position:       absolute;
+    top:            0;
+    height:         800px;
+    width:          800px;*/
+    width:          900px;
+}
+
 .srpl-business h1{
     font-size:      2em;
     line-height:    1.6em;

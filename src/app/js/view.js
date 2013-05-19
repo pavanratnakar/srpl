@@ -63,6 +63,24 @@ YUI.add('srpl-app-view',function(Y){
         */
         overlay : {
             valueFn: null
+        },
+        /**
+        * carousel
+        */
+        carousel : {
+            valueFn: null
+        },
+        /**
+        * businessess
+        */
+        businessess : {
+            valueFn: null
+        },
+        /**
+        * active
+        */
+        active : {
+            valueFn: null
         }
     };
 
@@ -101,6 +119,8 @@ YUI.add('srpl-app-view',function(Y){
         overlayEvents : function(){
             var t = this,
                 overlayCloseListener,
+                overlayPrevListener,
+                overlayNextListener,
                 resizeListener,
                 keydownEscListener;
 
@@ -110,6 +130,20 @@ YUI.add('srpl-app-view',function(Y){
                 }
             },'.close');
             t.eventListeners.push(overlayCloseListener);
+
+            overlayPrevListener =  t.get('overlay').get('boundingBox').delegate({
+                'click' : function(e){
+                    t.moveCarousel('previous');
+                }
+            },'.prev');
+            t.eventListeners.push(overlayPrevListener);
+
+            overlayNextListener =  t.get('overlay').get('boundingBox').delegate({
+                'click' : function(e){
+                    t.moveCarousel('next');
+                }
+            },'.next');
+            t.eventListeners.push(overlayNextListener);
 
             resizeListener = Y.on('srpl:resize',function(){
                 t.resize();
@@ -155,7 +189,7 @@ YUI.add('srpl-app-view',function(Y){
                     Y.one('body').appendChild(Y.srpl.App.templates.fader());
                 }
                 this.set('overlay',new Y.Overlay({
-                    zIndex: 10001,
+                    zIndex: 500,
                     centered : true
                 }));
                 this.get('overlay').get('boundingBox').addClass("srpl-overlay");
@@ -174,6 +208,54 @@ YUI.add('srpl-app-view',function(Y){
             }
         },
         /**
+        * @method add
+        * @return {void}
+        */
+        moveCarousel: function(type){
+            var index;
+            if (type === 'next') {
+                index = this.get('carousel').get('selectedItem') + 1;
+            } else {
+                this.get('carousel').scrollPageBackward();
+                index = this.get('carousel').get('selectedItem') - 1;
+            }
+            this.get('carousel').scrollTo(this.get('carousel').get('selectedItem'));
+            this.set('active',this.get('businessess')[index]);
+            this.show();
+        },
+        /**
+        * @method show
+        * @return {void}
+        */
+        show: function(){
+            var t = this,
+                container = t.get('overlay').get('boundingBox');
+
+            if (container.one('#srpl-'+t.get('active')) && !container.one('#srpl-'+t.get('active')).getContent()) {
+                t.get('searchModel').query({
+                    'id': t.get('active')
+                },function(err,e){
+                    if (err) {
+                        Y.log('Srpl :: AppView : Error');
+                        Y.log(err);
+                    } else {
+                        Y.log(e.local.business);
+                        t.get('businessView').setAttrs({
+                            'business' : new Y.srpl.Business.Model(e.local.business)
+                        });
+                    }
+                    t.get('businessView').render();
+                    if (t.get('overlay')) {
+                        t.get('overlay').set("centered", "body");
+                        t.get('overlay').show();
+                    }
+                    t.get('loader').hide();
+                });
+            } else {
+                t.get('loader').hide();
+            }
+        },
+        /**
         * @method render
         * @return {void}
         */
@@ -184,36 +266,24 @@ YUI.add('srpl-app-view',function(Y){
                 t.get('loader').render();
                 Y.srpl.util.showFader();
                 t.get('overlay').setAttrs({
-                    bodyContent: t.template(),
+                    bodyContent: t.template({'businessess':t.get('businessess')}),
                     width: 900
                 });
                 t.get('overlay').render();
                 t.get('overlay').hide();
             } else if (!t.get('container').one('#srpl-container')) {
-                t.get('container').setContent(t.template());
+                t.get('container').setContent(t.template({'businessess':t.get('businessess')}));
             }
-            t.get('searchModel').query({
-                'local_count': Y.srpl.config.local_count,
-                'obq': 'pizza near new york',
-                'userLat': 12.96698,
-                'userLon': 77.58729
-            },function(err,e){
-                if (err) {
-                    Y.log('Srpl :: AppView : Error');
-                    Y.log(err);
-                } else {
-                    Y.log(e.local.business);
-                    t.get('businessView').setAttrs({
-                        'business' : new Y.srpl.Business.Model(e.local.business)
-                    });
-                }
-                t.get('businessView').render();
-                if (t.get('overlay')) {
-                    t.get('overlay').set("centered", "body");
-                    t.get('overlay').show();
-                }
-                t.get('loader').hide();
-            });
+            t.show();
+            // t.set('carousel',new Y.Carousel({
+            //     boundingBox: '.srpl-carousel',
+            //     contentBox: ".srpl-carousel > ol",
+            //     numVisible : 1,
+            //     hidePagination : true,
+            //     scrollIncrement : 1
+            // }));
+            // t.get('carousel').plug(Y.CarouselAnimPlugin,{animation:{speed: 0.7}});
+            // t.get('carousel').render();
         },
         /**
         * @method close popup
@@ -248,6 +318,9 @@ YUI.add('srpl-app-view',function(Y){
         'node',
         'view',
         'overlay',
+        'gallery-carousel',
+        'gallery-carousel-anim',
+        'substitute',
         'srpl-app-css',
         'srpl-app-button-css',
         'srpl-app-loader-view',

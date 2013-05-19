@@ -47,53 +47,48 @@ YUI.add('srpl-business-view', function(Y){
         * @method render
         * @return {boolean}
         */
-        render: function(type){
-            type = type || 'append';
+        render: function(){
             // HACK FOR NEW
             this.get('business').setAttrs({
-                'herophoto':'http://www.beaurivage.com/images/restaurants/restaurants_fine_jia.jpg',
-                'height':'315',
-                'width':'851'
+                'herophoto':'http://www.beaurivage.com/images/restaurants/restaurants_fine_jia.jpg'
             });
             var t = this,
                 b = this.get('business'),
-                node = Y.Node.create('<li class="srpl-business"></li>'),
+                node = this.get('container').one('#srpl-'+b.get('id')),
                 headerHeight;
 
-            if (type === 'append') {
-                t.get('container').append(node);
-            } else {
-                t.get('container').prepend(node);
+            if (!node.getContent()) {
+                node.setContent(t.template({
+                    b : b
+                }));
+                headerHeight = t.get('container').one('.srpl-header').get('offsetHeight');
+                node.one('img.hero').setStyle('height',headerHeight);
+                t.set('map',new Y.srpl.Map({
+                    'height' : headerHeight,
+                    'width' : Y.one(Y.srpl.config('containers.main')).get('offsetWidth') - t.get('container').one('.srpl-hero-container').get('offsetWidth') - 1,
+                    'traffic' : false,
+                    'boundingBox' : node.one('.srpl-map'),
+                    'center' : b.geo(),
+                    'zoomLevel' : Y.srpl.config('ymaps.zoomThresholdLevel'),
+                    'controls' : false,
+                    'animatedTransitions' : Y.srpl.config('ymaps.animatedTransitions')
+                }));
+                t.get('map').render(function(){
+                    t.get('map').setControls({
+                        'zoomControl' : Y.srpl.config('ymaps.zoomControl'),
+                        'scale' : Y.srpl.config('ymaps.scale'),
+                        'mouse' : Y.srpl.config('ymaps.mouse'),
+                        'keyboard' : Y.srpl.config('ymaps.keyboard')
+                    });
+                    var marker = new Y.YMaps.Marker({
+                        geoLocation: b.geo(),
+                        label: '*',
+                        detailViewContent: '',
+                        hoverOverMarkerContent: ''
+                    });
+                    t.get('map').draw(marker);
+                });
             }
-            node.setContent(t.template({
-                b : b
-            }));
-            headerHeight = t.get('container').one('.srpl-header').get('offsetHeight');
-            node.one('img.hero').setStyle('height',headerHeight);
-            t.set('map',new Y.srpl.Map({
-                'height' : headerHeight,
-                'width' : Y.one(Y.srpl.config('containers.main')).get('offsetWidth') - t.get('container').one('.srpl-hero-container').get('offsetWidth') - 1,
-                'traffic' : false,
-                'boundingBox' : node.one('.srpl-map'),
-                'center' : b.geo(),
-                'zoomLevel' : Y.srpl.config('ymaps.zoomThresholdLevel'),
-                'controls' : false
-            }));
-            t.get('map').render(function(){
-                t.get('map').setControls({
-                    'zoomControl' : Y.srpl.config('ymaps.zoomControl'),
-                    'scale' : Y.srpl.config('ymaps.scale'),
-                    'mouse' : Y.srpl.config('ymaps.mouse'),
-                    'keyboard' : Y.srpl.config('ymaps.keyboard')
-                });
-                var marker = new Y.YMaps.Marker({
-                    geoLocation: b.geo(),
-                    label: '*',
-                    detailViewContent: '',
-                    hoverOverMarkerContent: ''
-                });
-                t.get('map').draw(marker);
-            });
         },
         /**
         * @method clear

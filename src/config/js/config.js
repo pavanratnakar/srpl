@@ -54,8 +54,7 @@ YUI.add('srpl-config', function(Y){
             limit : 10
         },
         search:{
-            gwsServer: 'http://gws2.maps.yahoo.com',
-            local_count:10
+            server: 'http://maps.yahoo.com/myc-local'
         },
         business:{
             galleryCount : 4
