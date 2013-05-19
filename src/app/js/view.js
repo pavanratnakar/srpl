@@ -219,7 +219,7 @@ YUI.add('srpl-app-view',function(Y){
                 this.get('carousel').scrollPageBackward();
                 index = this.get('carousel').get('selectedItem') - 1;
             }
-            this.get('carousel').scrollTo(this.get('carousel').get('selectedItem'));
+            this.get('carousel').scrollTo(index);
             this.set('active',this.get('businessess')[index]);
             this.show();
         },
@@ -267,7 +267,8 @@ YUI.add('srpl-app-view',function(Y){
                 Y.srpl.util.showFader();
                 t.get('overlay').setAttrs({
                     bodyContent: t.template({'businessess':t.get('businessess')}),
-                    width: 900
+                    width: 900,
+                    height: 292
                 });
                 t.get('overlay').render();
                 t.get('overlay').hide();
@@ -275,15 +276,15 @@ YUI.add('srpl-app-view',function(Y){
                 t.get('container').setContent(t.template({'businessess':t.get('businessess')}));
             }
             t.show();
-            // t.set('carousel',new Y.Carousel({
-            //     boundingBox: '.srpl-carousel',
-            //     contentBox: ".srpl-carousel > ol",
-            //     numVisible : 1,
-            //     hidePagination : true,
-            //     scrollIncrement : 1
-            // }));
-            // t.get('carousel').plug(Y.CarouselAnimPlugin,{animation:{speed: 0.7}});
-            // t.get('carousel').render();
+            t.set('carousel',new Y.Carousel({
+                boundingBox: '.srpl-carousel',
+                contentBox: ".srpl-carousel > ol",
+                numVisible : 1,
+                hidePagination : true,
+                scrollIncrement : 1
+            }));
+            t.get('carousel').plug(Y.CarouselAnimPlugin,{animation:{speed: 0.7}});
+            t.get('carousel').render();
         },
         /**
         * @method close popup

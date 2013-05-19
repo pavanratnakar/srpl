@@ -238,10 +238,10 @@ html[xmlns] .srpl .clearfix {
     width:              30px;
     text-align:         center;
     z-index:            501;
-    -webkit-border-radius:4px;
-    border-radius: 4px;
-    -moz-border-radius: 4px;
-    -khtml-border-radius:4px;
+    -webkit-border-radius:  4px;
+    border-radius:          4px;
+    -moz-border-radius:     4px;
+    -khtml-border-radius:   4px;
 }
 
 .srpl-overlay .srpl button.prev {
@@ -261,6 +261,35 @@ html[xmlns] .srpl .clearfix {
 
 /************************************************************************
     End of SRPL Overlay Properties
+************************************************************************/
+
+/************************************************************************
+    SRPL Carousel Properties
+************************************************************************/
+
+.srpl-overlay .yui3-carousel-content li.yui3-carousel-item { 
+    width:              900px;
+    text-align:         left;
+}
+
+.srpl-overlay .yui3-carousel-content .actions li {
+    position:           static;
+    padding:            0 0.692em;
+    margin:             0;
+}
+
+.srpl-overlay .yui3-carousel-content .actions li.first-child,
+.srpl-overlay .yui3-carousel-content .actions li.first-child button{
+    padding-left:       0;
+}
+
+.srpl-overlay .yui3-carousel-content .actions li.last-child{
+    border:             none;
+    padding-right:      0;
+}
+
+/************************************************************************
+    End of SRPL Carousel Properties
 ************************************************************************/
 
 #srpl-wrapper-container {
