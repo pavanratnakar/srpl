@@ -231,7 +231,7 @@ YUI.add('srpl-app-view',function(Y){
             var t = this,
                 container = t.get('overlay').get('boundingBox');
 
-            if (container.one('#srpl-'+t.get('active')) && !container.one('#srpl-'+t.get('active')).getContent()) {
+            //if (container.one('#srpl-'+t.get('active')) && !container.one('#srpl-'+t.get('active')).getContent()) {
                 t.get('searchModel').query({
                     'id': t.get('active')
                 },function(err,e){
@@ -251,9 +251,9 @@ YUI.add('srpl-app-view',function(Y){
                     }
                     t.get('loader').hide();
                 });
-            } else {
-                t.get('loader').hide();
-            }
+            // } else {
+            //     t.get('loader').hide();
+            // }
         },
         /**
         * @method render

@@ -232,26 +232,29 @@ html[xmlns] .srpl .clearfix {
 .srpl-overlay .srpl button.overlay-button,
 .srpl-overlay .srpl button.overlay-button.image {
     position:           absolute;
-    background-color:   grey;
-    padding:            10px;
-    height:             30px;
-    width:              30px;
     text-align:         center;
     z-index:            501;
-    -webkit-border-radius:  4px;
+/*    -webkit-border-radius:  4px;
     border-radius:          4px;
     -moz-border-radius:     4px;
-    -khtml-border-radius:   4px;
+    -khtml-border-radius:   4px;*/
 }
 
 .srpl-overlay .srpl button.prev {
-    top:               50%;
-    left:              -26px;
+    background:         url('../../app/img/myc.png') no-repeat 0 -1850px;
+    width:              21px;
+    height:             35px;
+    top:                50%;
+    left:               -26px;
+
 }
 
 .srpl-overlay .srpl button.next {
-    top:               50%;
-    right:             -26px;
+    background:         url('../../app/img/myc.png') no-repeat 0 -1894px;
+    width:              20px;
+    height:             35px;
+    top:                50%;
+    right:              -26px;
 }
 
 .srpl-overlay .close {
