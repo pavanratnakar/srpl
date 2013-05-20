@@ -208,6 +208,38 @@ YUI.add('srpl-app-view',function(Y){
             }
         },
         /**
+        * @method carouselNavigationControls
+        * @return {void}
+        */
+        carouselNavigationControls: function(index){
+            if (this.get('carousel')) {
+                var prev,
+                    next,
+                    container = this.get('overlay').get('boundingBox');
+
+                if (this.get('businessess').length > 1) {
+                    if (index === 0) {
+                        next = true;
+                    } else if (index === this.get('businessess').length - 1) {
+                        prev = true;
+                    } else {
+                        next = true;
+                        prev = true;
+                    }
+                }
+                if (prev) {
+                    container.one('.prev').show();
+                } else {
+                    container.one('.prev').hide();
+                }
+                if (next) {
+                    container.one('.next').show();
+                } else {
+                    container.one('.next').hide();
+                }
+            }
+        },
+        /**
         * @method add
         * @return {void}
         */
@@ -222,6 +254,7 @@ YUI.add('srpl-app-view',function(Y){
             this.get('carousel').scrollTo(index);
             this.set('active',this.get('businessess')[index]);
             this.show();
+            this.carouselNavigationControls(index);
         },
         /**
         * @method show
@@ -231,7 +264,7 @@ YUI.add('srpl-app-view',function(Y){
             var t = this,
                 container = t.get('overlay').get('boundingBox');
 
-            //if (container.one('#srpl-'+t.get('active')) && !container.one('#srpl-'+t.get('active')).getContent()) {
+            if (container.one('#srpl-'+t.get('active')) && !container.one('#srpl-'+t.get('active')).getContent()) {
                 t.get('searchModel').query({
                     'id': t.get('active')
                 },function(err,e){
@@ -251,16 +284,17 @@ YUI.add('srpl-app-view',function(Y){
                     }
                     t.get('loader').hide();
                 });
-            // } else {
-            //     t.get('loader').hide();
-            // }
+            } else {
+                t.get('loader').hide();
+            }
         },
         /**
         * @method render
         * @return {void}
         */
         render: function(e){
-            var t = this;
+            var t = this,
+                selectedItem = Y.Array.indexOf(t.get('businessess'),t.get('active'));
 
             if (t.get('overlay')) {
                 t.get('loader').render();
@@ -278,13 +312,17 @@ YUI.add('srpl-app-view',function(Y){
             t.show();
             t.set('carousel',new Y.Carousel({
                 boundingBox: '.srpl-carousel',
-                contentBox: ".srpl-carousel > ol",
+                contentBox: "#srpl-container",
                 numVisible : 1,
                 hidePagination : true,
-                scrollIncrement : 1
+                scrollIncrement : 1,
+                selectedItem : selectedItem,
+                carouselItemEl : '.srpl-business',
+                isCircular : false
             }));
-            t.get('carousel').plug(Y.CarouselAnimPlugin,{animation:{speed: 0.7}});
+            t.get('carousel').plug(Y.CarouselAnimPlugin,{animation:{speed: 0.5}});
             t.get('carousel').render();
+            t.carouselNavigationControls(selectedItem);
         },
         /**
         * @method close popup
