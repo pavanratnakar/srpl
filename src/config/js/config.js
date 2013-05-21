@@ -30,6 +30,12 @@ YUI.add('srpl-config', function(Y){
             zoomThresholdLevel : 16,
             animatedTransitions : true // default true. Override it if required
         },
+        carousel : {
+            numVisible : 1,
+            hidePagination : true,
+            scrollIncrement : 1,
+            isCircular : false
+        },
         transisition : {
             duration : 1,
             easing : 'ease-in-out',
@@ -38,7 +44,10 @@ YUI.add('srpl-config', function(Y){
         containers : {
             main : '#srpl-wrapper-container',
             business : '#srpl-container',
-            loader : '#srpl-loader-container'
+            fader : '#srpl-fader-container',
+            loader : '#srpl-loader-container',
+            carousel : '.srpl-carousel',
+            carouselItem : '.srpl-business'
         },
         srpl:{
             version:'@VERSION@',
@@ -54,7 +63,8 @@ YUI.add('srpl-config', function(Y){
             limit : 10
         },
         search:{
-            server: 'http://maps.yahoo.com/myc-local'
+            server: 'http://localhost:8000/api/locals'
+            //server: 'http://maps.yahoo.com/myc-local'
         },
         business:{
             galleryCount : 4

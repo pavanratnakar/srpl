@@ -36,7 +36,7 @@
         <meta itemprop="description" content="">
         <meta itemprop="image" content="">
         <!-- END OF GOOGLE PLUS TAGS -->
-        <title>FULL SRP JS Widget</title>
+        <title>Mini SRP JS Widget</title>
 
         <link rel="canonical" href="" />
 
@@ -87,11 +87,10 @@
                     app.set('active',target.getContent());
                     app.render();
                 });
-                // overlay bpp
                 app = new Y.srpl.App.View({
-                    overlay : true,
+                    container : '#wrapper',
                     appid : '12312',
-                    businessess : ['11138504','27010579','27010574','46404228','11067730']
+                    type : 'mini'
                 });
             });
         </script>

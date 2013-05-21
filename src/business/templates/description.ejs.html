@@ -1,4 +1,4 @@
-<% if (b.get('slogan')) { %>
+<% if (b.get('slogan') && !Y.Lang.isObject(b.get('slogan'))) { %>
 <div class="srpl-container">
     <h6><%= b.get('slogan') %></h6>
 </div>

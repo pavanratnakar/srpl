@@ -1,7 +1,3 @@
-.srpl-business {
-    width:          900px;
-}
-
 .srpl-business h1{
     font-size:      2em;
     line-height:    1.6em;
@@ -10,25 +6,25 @@
 
 .srpl-business h3{
     font-size:      1.4em;
-    line-height:    1.2em;
+    line-height:    1.6em;
 }
 
 .srpl-business .column1{
-    width:              65%;
+    width:          65%;
 }
 
 .srpl-business .column2{
-    width:              35%;
+    width:          35%;
 }
 
 .srpl-business .srpl-header{
-    height:             290px;
+    height:        290px;
 }
 
 .srpl-business .srpl-body .srpl-container{
-    margin:             10px 0;
-    display:			inline-block;
-    padding:			0 5px;
+    margin:        10px 0;
+    display:       inline-block;
+    padding:	   0 5px;
 }
 
 /* YUI CSS Detection Stamp */

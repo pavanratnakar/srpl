@@ -280,8 +280,7 @@ html[xmlns] .srpl .clearfix {
     margin:             0;
 }
 
-.srpl-overlay .yui3-carousel-content .actions li.first-child,
-.srpl-overlay .yui3-carousel-content .actions li.first-child button{
+.srpl-overlay .yui3-carousel-content .actions li.first-child{
     padding-left:       0;
 }
 
@@ -295,7 +294,6 @@ html[xmlns] .srpl .clearfix {
 ************************************************************************/
 
 #srpl-wrapper-container {
-    width:              900px;
     overflow:           hidden;
 }
 

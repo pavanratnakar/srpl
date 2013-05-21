@@ -9,15 +9,37 @@ YUI.add('srpl-business-model', function(Y){
 
     // Attributes and static properties for srpl-business model which we are consuming
     Business.ATTRS = {
+        "accountid" : null,
         "addr" : null,
+        "ambiance" : null,
+        "bizcard" : null,
+        "bppurl" : null,
+        "brands" : null,
+        "chainid" : null,
+        "chainurl" : null,
         "city" : null,
         "closed_business" : null,
+        "corrections" : null,
+        "crawled_photos" : null,
+        "crawled_videos" : null,
         "crossstreet" : null,
+        "csubmitclosed" : null,
+        "cuisine" : null,
+        "department" : null,
         "desc" : null,
         "detailurl" : null,
+        "dinmenuurl" : null,
+        "dinresurl" : null,
+        "directiontourl" : null,
+        "disphoo" : null,
         "distance" : null,
-        "dphone" : null, // phone number without code styling
+        "dphone" : null,
+        "dresscode" : null,
         "dtitle" : null, // title stripped of html tags
+
+        "full_size_photos" : null,
+
+
         "hiconf" : null,
         "hideaddr" : null, // not using
         "id" : null,
@@ -69,8 +91,9 @@ YUI.add('srpl-business-model', function(Y){
             var t = this;
 
             if(!e.id){
-                t.set('id',this.generateClientId());
+                t.set('id',t.generateClientId());
             }
+
             // convert values to float
             Y.each(['lat', 'lon', 'rating'], function(a){
                 if(Y.Lang.isNumber(parseFloat(t.get(a),10))){
@@ -147,6 +170,36 @@ YUI.add('srpl-business-model', function(Y){
         */
         getLongitude : function(){
             return this.get('lon');
+        },
+        /**
+        * @method getPrimaryCategory
+        * @return {string}
+        */
+        getPrimaryCategory : function(){
+            if (this.get('ycatsprimary')) {
+                if (Y.Lang.isArray(this.get('ycatsprimary').data)) {
+                    return this.get('ycatsprimary').data[0].name;
+                }
+                return this.get('ycatsprimary').data.name;
+            }
+            return false;
+        },
+        /**
+        * @method getPrimaryCategory
+        * @return {string}
+        */
+        getThumbnailGalleryPhotos : function(){         
+            var photos = [];
+            if (this.get('full_size_photos') && this.get('full_size_photos').count > 0) {
+                if (Y.Lang.isArray(this.get('full_size_photos').photo)) {
+                    Y.each(this.get('full_size_photos').photo,function(p,i){
+                        photos.push(p['full']['url']);
+                    });
+                } else {
+                    photos.push(this.get('full_size_photos').photo.full.url);
+                }
+            }
+            return photos;
         }
     },{
         /**

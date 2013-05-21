@@ -1,7 +1,19 @@
+.srpl-overlay .yui3-carousel-content .srpl-gallery li,
 .srpl-gallery li{
     padding:            0 0.5em;
     display:            inline;
     float:              left;
+    position:           static;
+}
+
+.srpl-overlay .yui3-carousel-content .srpl-gallery li.first-child,
+.srpl-gallery li.first-child{
+    padding-left:       0;
+}
+
+.srpl-overlay .yui3-carousel-content .srpl-gallery li.last-child,
+.srpl-gallery li.last-child{
+    padding-right:      0;
 }
 
 .srpl-gallery li img{

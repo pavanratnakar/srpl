@@ -1,4 +1,4 @@
-<% if (b.get('latestreview')) { %>
+<% if (b.get('latestreview') && !Y.Lang.isObject(b.get('latestreview'))) { %>
 <div class="srpl-container">
     <h3>What people say</h3>
     <p><%= b.get('latestreview') %></p>

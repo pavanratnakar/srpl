@@ -38,12 +38,8 @@ YUI.add('srpl-search-model', function(Y){
         * @return {hash} response
         */
         handleBusiness:function(data){
-            var businesses = Y.Array(Y.srpl.util.atPath(data, 'local.listing'));
-            businesses = Y.Array.filter(businesses,function(e){
-                return e;
-            });
             return {
-                business : businesses[0]
+                business : Y.srpl.util.atPath(data, 'listing')
             };
         },
         /**
@@ -54,8 +50,8 @@ YUI.add('srpl-search-model', function(Y){
         */
         formatResponse: function(data){
             var response = {};
-            if (Y.srpl.util.atPath(data, 'ResultSet.Result')) {
-                response.local = this.handleBusiness(Y.srpl.util.atPath(data, 'ResultSet.Result'));
+            if (Y.srpl.util.atPath(data, 'local')) {
+                response.local = this.handleBusiness(Y.srpl.util.atPath(data, 'local'));
             }
             return response;
         },
@@ -91,12 +87,13 @@ YUI.add('srpl-search-model', function(Y){
             },{
                 // checking caching
                 cacheWhen: function(data){
-                    if (data && data.ResultSet && data.ResultSet.Error === '0') {
-                        return true;
-                    }
-                    else {
-                        return false;
-                    }
+                    // if (data && data.ResultSet && data.ResultSet.Error === '0') {
+                    //     return true;
+                    // }
+                    // else {
+                    //     return false;
+                    // }
+                    return true;
                 }
             });
 

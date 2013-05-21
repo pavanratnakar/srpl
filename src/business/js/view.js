@@ -14,17 +14,16 @@ YUI.add('srpl-business-view', function(Y){
     BusinessView.ATTRS = {
         container : null,
         business : {},
-        map : null
+        map : null,
+        type : null
     };
 
     Y.extend(BusinessView, Y.View, {
-        // Assign base location template that will be used to render the srpl-business.
-        template: Y.srpl.Business.templates.base,
         eventListners : [],
         // Specify delegated DOM events to attach to the srpl-business container.
         events:{
             'li .directions':{
-                'click':     'directionsClick'
+                'click':     '_directionsClick'
             }
         },
         /**
@@ -34,38 +33,29 @@ YUI.add('srpl-business-view', function(Y){
         */
         initializer: function(config){
             this.eventListeners = [];
-            Y.YMaps.init({
-                appid: Y.srpl.config('ymaps.appid')
-            });
+            if (this.type === 'full') {
+                Y.YMaps.init({
+                    appid: Y.srpl.config('ymaps.appid')
+                });
+            }
         },
         /**
-        * @method focus
+        * @method renderFull
         * @return {void}
         */
-        focus : function(){},
-        /**
-        * @method render
-        * @return {boolean}
-        */
-        render: function(){
-            // HACK FOR NEW
-            this.get('business').setAttrs({
-                'herophoto':'http://www.beaurivage.com/images/restaurants/restaurants_fine_jia.jpg'
-            });
+        renderFull : function(node,b){
             var t = this,
-                b = this.get('business'),
-                node = this.get('container').one('#srpl-'+b.get('id')),
                 headerHeight;
 
             if (!node.getContent()) {
-                node.setContent(t.template({
+                node.setContent(Y.srpl.Business.templates.full({
                     b : b
                 }));
                 headerHeight = t.get('container').one('.srpl-header').get('offsetHeight');
                 node.one('img.hero').setStyle('height',headerHeight);
                 t.set('map',new Y.srpl.Map({
                     'height' : headerHeight,
-                    'width' : Y.one(Y.srpl.config('containers.main')).get('offsetWidth') - t.get('container').one('.srpl-hero-container').get('offsetWidth') - 1,
+                    'width' : t.get('container').one('.srpl-header').get('offsetWidth') - t.get('container').one('.srpl-hero-container').get('offsetWidth') - 1,
                     'traffic' : false,
                     'boundingBox' : node.one('.srpl-map'),
                     'center' : b.geo(),
@@ -91,6 +81,38 @@ YUI.add('srpl-business-view', function(Y){
             }
         },
         /**
+        * @method renderMini
+        * @return {void}
+        */
+        renderMini : function(node,b){
+            var t = this,
+                headerHeight;
+
+            if (!node.getContent()) {
+                node.setContent(Y.srpl.Business.templates.mini({
+                    b : b
+                }));
+            }
+        },
+        /**
+        * @method render
+        * @return {boolean}
+        */
+        render: function(){
+            // HACK FOR NEW
+            this.get('business').setAttrs({
+                'herophoto':'http://www.beaurivage.com/images/restaurants/restaurants_fine_jia.jpg'
+            });
+            var b = this.get('business'),
+                node = this.get('container').one('#srpl-'+b.get('id'));
+
+            if (this.get('type') === 'full') {
+                this.renderFull(node,b);
+            } else if (this.get('type') === 'mini') {
+                this.renderMini(node,b);
+            }
+        },
+        /**
         * @method clear
         * @return {void}
         */
@@ -106,11 +128,11 @@ YUI.add('srpl-business-view', function(Y){
         // -- Event Handlers -------------------------------------------------------
 
         /**
-        * @method directionsClick
+        * @method _directionsClick
         * @params {e} e
         * @return {void}
         */
-        directionsClick: function(e){
+        _directionsClick: function(e){
             var b = this.get('business');
             window.open('http://maps.yahoo.com/directions/?lat='+b.getLatitude()+'&lon='+b.getLongitude()+'&zoom='+Y.srpl.config('ymaps.zoomThresholdLevel')+'&d='+encodeURIComponent(b.getNamedAddress()),Y.srpl.config('linking.target'))
         }

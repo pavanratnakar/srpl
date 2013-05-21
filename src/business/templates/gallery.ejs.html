@@ -1,11 +1,13 @@
-<% if (b.get('thumbnail_photos') && b.get('thumbnail_photos').count) { %>
+<% 
+    var photos = b.getThumbnailGalleryPhotos();
+    if (photos.length > 0) { %>
     <div class="srpl-container">
         <ul class="srpl-gallery">
         <%
-        var photos = b.get('thumbnail_photos').photo.slice(0,Y.srpl.config('business.galleryCount'));
+        photos = photos.slice(0,Y.srpl.config('business.galleryCount'));
         Y.each(photos, function(p,i){ %>
             <li>
-                <img src="<%= p.thumb.url %>" alt="<%= b.displayValue() %>"/>
+                <img src="<%= p %>" alt="<%= b.displayValue() %>"/>
             </li>
         <%}); %>
         </ul>

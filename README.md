@@ -1,31 +1,19 @@
-x * tests via yuitest/grover/phantomjs
 x * deploy locally with comboserver
-x * templating engines supported: ejs (eventually - handlebars, etc)
 
 x srpl --setup				(one time only - install dependencies and/or make stubs)
 x srpl --server
 x srpl --build
-x srpl --lint
-x srpl --tests
 x srpl --create @module@
 x srpl --templates
+
 srpl --docs
-
-srpl --mobify
-
-
 
 npm dependencies - 
 comboserver
-yuitest/grover/phantomjs
 underscore/ejs
 
 - simpleyui should be generated with build script, not by hand.
-- generate intl specific strings
 - use node-burrito to autogenerate manifests
-
-
-
 
 setup instructions 
 
@@ -48,8 +36,7 @@ you can install node in one of many ways
 - you're now good to run tests/lint
 
 *get the source*
-- if you're reading this, you probably have it. else - svn co $ > svn+ssh://svn.corp.yahoo.com/yahoo/properties/maps/trunk/srpl
-
+- if you're reading this, you probably have it. else - svn co $ > svn+ssh://<SVN PATH>
 
 *setup* 
 - $ > cd srpl
@@ -58,9 +45,18 @@ you can install node in one of many ways
 *that's it!*
 - to see all available options, $ > node scripts/srpl-js --help 
 
+FUTURE :
+x * tests via yuitest/grover/phantomjs - not yet done
+x * templating engines supported: ejs (eventually - handlebars, etc) - future
 
-todo - filesystem fixes.
-- ALL STUBS.
+x srpl --lint
+x srpl --tests
+
+srpl --mobify
+
+yuitest/grover/phantomjs
+
+- generate intl specific strings
 
 
 

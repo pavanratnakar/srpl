@@ -19,6 +19,36 @@ module.exports = function(config){
 
         app.route('/samples/*').files('./samples');
 
+        app.route('/api/locals', function(req, res){
+            var qs = req.qs;
+
+            var cb = qs.callback;
+            var qo = {};
+            // filtering out the params we want
+            _(['stx', 'csz', 'lat', 'lon', 'radius', 'n', 'begin', 'sortby', 'ycatfilt', 'aggregation', 'expandradius', 'id', 'listingstatusfilter']).each(function(p, i){
+                if(qs[p]){
+                    qo[p] = qs[p];
+                }
+            });
+
+            var url = 'http://dd.local.yahoo.com/xmllocal?' + _.map(qo, function(v,k){ return encodeURIComponent(k) + '=' + encodeURIComponent(v)}).join('&');
+
+            request(url, {}, function(e,r){
+                // todo - error handling
+                if(e){
+                    console.log('error', e);
+                    res.end();
+                }
+                else{
+                    var responseStr = require('xml2json').toJson(r.body);
+                    if(cb){
+                        responseStr = cb + '(' + responseStr + ');'
+                    }
+                    res.end(responseStr);
+                }
+            });  
+        });
+
         app.route('/api/ysm', function(req, res){
             var affilData = 'ua='+(req.headers['user-agent']);
             var xfip = req.headers['x-forwarded-for'];

@@ -1,18 +1,15 @@
 {
 
-    "name":         "myc",
+    "name":         "srpl",
     "version":      "0.0.1",
-    "description":  "Front end goodness for maps.yahoo.com",
-    "author":       "Maps team <helsinki-blr-devl@yahoo-inc.com>",
-    "homepage":     "http://maps.yahoo.com",
+    "description":  "Embed functionality for Yahoo! local.yahoo.com components",
+    "author":       "Locals team <feynman-blr@yahoo-inc.com>",
+    "homepage":     "http://local.yahoo.com",
     "bugs": { 
         "url" : "" 
     },
     "contributors":[
-        {"name": "Sunil Pai"},
-        {"name": "Pavan Ratnakar"},
-        {"name": "Louis Antony"},
-        {"name": "Shonil Vijay"}
+        {"name": "Pavan Ratnakar"}
     ],
     "os": ["darwin", "linux", "win32"], 
     "engines": {
@@ -43,10 +40,8 @@
         "request":      "*",
         "xml2json":     "*",
         "mime":         "*"
-
-        
     },
-    "keywords": "maps",
+    "keywords": "feynman",
     "license": "Yahoo! Proprietary",
     "repository": {
         "type": "svn",
