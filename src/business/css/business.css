@@ -1,11 +1,3 @@
-.srpl-business {
-    display:        none;
-}
-
-..srpl-business {
-    display:        block;
-}
-
 .srpl-business h1{
     font-size:      2em;
     line-height:    1.6em;
@@ -13,8 +5,13 @@
 }
 
 .srpl-business h3{
+    font-size:      1em;
+}
+
+.srpl-business h5{
     font-size:      1.4em;
-    line-height:    1.6em;
+    line-height:    2em;
+    font-weight:    400;
 }
 
 .srpl-business .column1{
@@ -30,26 +27,76 @@
 }
 
 .srpl-business .srpl-body .srpl-container{
-    margin:        10px 0;
+    margin:        15px 0 20px;
     display:       block;
-    padding:	   0 15px;
+    padding:       0 15px;
+}
+
+.srpl-business .srpl-body .srpl-container li{
+    position:     static;
+    margin:       0;
+    text-align:   left;
 }
 
 /************************************************************************
     SRPL Business detail Container
 ************************************************************************/
 
-.srpl-detail-container .srpl-content-container {
+.srpl-detail-container .srpl-container-sub {
     border-bottom:          1px solid #C9C9C9;
     padding:                6px 0;
 }
 
-.srpl-detail-container .actions {
-    padding:                6px 0 6px 0;
+/************************************************************************
+    End of SRPL Business detail Container
+************************************************************************/
+
+/************************************************************************
+    SRPL Business Rating and Reviews
+************************************************************************/
+
+.srpl-business .srpl-avatar-container {
+    padding:            5px 0 0 0;
+}
+
+.srpl-business .srpl-body .srpl-container li.srpl-reviews {
+    margin:             0 0 15px 0; 
+}
+
+.srpl-business .srpl-rating-header {
+    margin:             0 0 5px 0;
+}
+
+.srpl-business .srp-rating-review {
+    margin:             2px 4px 0 0;
+}
+
+.srpl-business .srpl-rating-body p{
+    line-height:        1.4em;
+}
+
+.srpl-business .srpl-review-name {
+    font-weight:        bold;
 }
 
 /************************************************************************
-    SRPL Business detail Container
+    End of SRPL Business Rating and Reviews
+************************************************************************/
+
+/************************************************************************
+    SRPL Business Type specific changes
+************************************************************************/
+
+.srpl .mini li.srpl-business {
+    display:        none;
+}
+
+.srpl .mini li.srpl-business.active {
+    display:        block;
+}
+
+/************************************************************************
+    End of SRPL Business Type specific changes
 ************************************************************************/
 
 /* YUI CSS Detection Stamp */

@@ -1,0 +1,499 @@
+YUI.add('myc-locals', function(Y){
+    // http://twiki.corp.yahoo.com/view/Localeng/LocalAPI
+    var defaults = {
+        url: '/myc-local?',
+        params:{
+            stx: null,
+            csz: null,
+            lat: null,
+            lon: null,
+            radius: null,
+            n: null,
+            begin: null,
+            sortby: null,
+            ycatfilt: null,
+            aggregation: null,
+            expandradius: null,
+            id: null,
+            listingstatusfilter: null
+        }
+    };
+
+    var Locals = function(){
+        Locals.superclass.constructor.apply(this, arguments);
+    };
+
+    Locals.NAME = 'locals';
+
+    Y.extend(Locals, Y.Model, {
+        initializer: function(config){},
+        queryOptions:function(options){
+            var ret = {};
+            Y.each(defaults.params, function(val, key){
+                if (Y.Lang.isValue(options[key]) || Y.Lang.isValue(defaults.params[key])) {
+                    ret[key] = options[key] || defaults.params[key];
+                }
+            });
+            return ret;
+        },
+        query: function(options, callback){ // callback should be called with (err, data)
+            var t = this;
+            options = options || {};
+
+            Y.myc.jsonp(Y.myc.config('businesses.domain') + (options.url || defaults.url) + Y.QueryString.stringify(this.queryOptions(options)),{
+                on:{
+                    success:function(data){
+                        callback(null,t.formatResponse(data, options));
+                    },
+                    failure:function(err){
+                        callback(err);
+                    },
+                    timeout:function(err){
+                        callback(err);
+                    }
+                }
+            });
+
+            return this;
+        },
+
+        formatResponse: function(data, options){
+            var response = {};
+            options = options || {};
+            var businesses = Y.Array(Y.myc.util.atPath(data, 'ResultSet.Result.local.listing'));
+            var retry = Y.Array(Y.myc.util.atPath(data, 'ResultSet.Result.local.retry'));
+
+            var isInvalid = (retry && retry[0] === "1")? true : false;
+            // Special case to show the results even when returned with the retry flag is the bounding box query
+            if (isInvalid && options.csz) {
+                isInvalid = false;
+            }
+
+            if (!options.details) {
+                options.details = {};
+            }
+
+            response.local = {
+                    details : {
+                        'searchtotal' : (isInvalid) ? 0 : Y.myc.util.atPath(data, 'ResultSet.Result.local.searchtotal') || options.details.searchtotal,
+                        'business' : options.details.business || options.stx,
+                        'location' : options.details.location || options.csz || (options.lat + ',' + options.lon),
+                        'localurl' : data.ResultSet.localAPIUrl || options.details.localurl,
+                        'stx' : options.details.stx || options.stx,
+                        'csz' : options.details.csz || options.csz,
+                        'locationsource' : options.details.locationsource || ((options.csz)? 'explicit' : 'implicit')
+                    },
+                    businesses : (isInvalid)? [] : Y.times(businesses.length, function(i){
+                        var l = new Y.myc.Business.Model(businesses[i]);
+                        l.set('interpretation',options.details.business);
+                        return l;
+                    })
+                };
+            // In case the query is for a specific business then the values are going to be a bit different
+            if (options.id && !isInvalid) {
+                var biz = response.local.businesses[0];
+                if (biz) {
+                    response.local.details = {
+                        'searchtotal' : 1,
+                        'business' : biz.displayValue(),
+                        'location' : biz.fullAddress(),
+                        'localurl' : data.ResultSet.localAPIUrl,
+                        'stx' : biz.displayValue(),
+                        'csz' : biz.fullAddress(),
+                        'locationsource' : 'explicit'
+                    };
+                }
+            }
+            return response;
+        }
+    },{
+        /**
+        * statics
+        * returns a singleton that can be shared around. USE WITH CAUTION.
+        * @method model
+        * @return {model}
+        */
+        model: (function(){
+            var _model;
+            return (function(config){
+                _model = _model || new Locals(config);
+                return _model;
+            });
+        })()
+    });
+
+    Y.namespace('myc.Locals');
+    Y.myc.Locals.Model = Locals;
+
+},'@VERSION@',{requires:['myc-search-model', 'myc-jsonp', 'myc-util']});
+
+// locals response will be XMLLocal xml converted to JSON
+// with updates to match the FE requirements(match the business object as constructed from the one box responses)
+// sample response
+
+// mycjson1({
+//     "@lang": "en-US",
+//     "ResultSet": {
+//         "@version": "2.0",
+//         "@lang": "en-US",
+//         "Error": "0",
+//         "ErrorMessage": "No error",
+//         "Locale": "en-US",
+//         "Result": {
+//             "local": {
+//                 "street": "",
+//                 "city": "New York",
+//                 "state": "NY",
+//                 "zip": "",
+//                 "lat": "40.714550",
+//                 "lon": "-74.007118",
+//                 "searchradius": "19.6353296747",
+//                 "searchtotal": "13056",
+//                 "begin": "1",
+//                 "numlistings": "10",
+//                 "retry": "0",
+//                 "listing": [{
+//                     "addr": "278 Bleecker St",
+//                     "city": "New York",
+//                     "closed_business": "0",
+//                     "desc": "John's Of Bleecker Street will surely satisfy your craving for tasty Italian cuisine. Their menu offers superb brick oven pizzas with ultra-fresh topping, calzones, and various pasta entrees. It has a loyal following, which seems to increase daily. Reservations are not accepted. Cash only. As a result of its popularity, other locations have been opened nearby like John's Pizzeria on the 260 West 44th Street and John's Pizzeria Eastside on the 401 East 64th Street.",
+//                     "detailurl": "http:\/\/local.yahoo.com\/info-11067730-john-s-pizzeria-new-york",
+//                     "distance": "1.20",
+//                     "dphone": "2122431680",
+//                     "dtitle": "John's Pizzeria",
+//                     "hiconf": "1",
+//                     "hideaddr": "N",
+//                     "id": "11067730",
+//                     "lat": "40.731669",
+//                     "lon": "-74.003316",
+//                     "mapurl": "http:\/\/maps.yahoo.com\/maps_result?q1=278+Bleecker+St+New+York+NY&gid1=11067730",
+//                     "nrating": "85",
+//                     "nreview": "85",
+//                     "rating": "4.5",
+//                     "phone": "(212) 243-1680",
+//                     "readreviewsurl": "http:\/\/local.yahoo.com\/info-11067730-john-s-pizzeria-new-york#reviews",
+//                     "reviewurl": "http:\/\/local.yahoo.com\/reviews?id=11067730",
+//                     "state": "NY",
+//                     "title": "John's Pizzeria",
+//                     "type": "POI",
+//                     "websitelabel": "http:\/\/www.johnsbrickovenpizza.com\/",
+//                     "zip": "10014",
+//                     "listing_status": {
+//                         "$": "open",
+//                         "@score": "100"
+//                     },
+//                     "website": {
+//                         "$": "http:\/\/www.johnsbrickovenpizza.com\/",
+//                         "@label": "http:\/\/www.johnsbrickovenpizza.com\/"
+//                     }
+//                 }, {
+//                     "addr": "357 W 125th St",
+//                     "city": "New York",
+//                     "closed_business": "0",
+//                     "desc": "",
+//                     "detailurl": "http:\/\/local.yahoo.com\/info-11138504-presidential-pizza-new-york",
+//                     "distance": "7.26",
+//                     "dphone": "2122227744",
+//                     "dtitle": "Presidential Pizza",
+//                     "hiconf": "1",
+//                     "hideaddr": "N",
+//                     "id": "11138504",
+//                     "lat": "40.811018",
+//                     "lon": "-73.952795",
+//                     "mapurl": "http:\/\/maps.yahoo.com\/maps_result?q1=357+W+125th+St+New+York+NY&gid1=11138504",
+//                     "nrating": "78",
+//                     "nreview": "78",
+//                     "rating": "4",
+//                     "phone": "(212) 222-7744",
+//                     "readreviewsurl": "http:\/\/local.yahoo.com\/info-11138504-presidential-pizza-new-york#reviews",
+//                     "reviewurl": "http:\/\/local.yahoo.com\/reviews?id=11138504",
+//                     "state": "NY",
+//                     "title": "Presidential <b>Pizza<\/b>",
+//                     "type": "POI",
+//                     "websitelabel": "",
+//                     "zip": "10027",
+//                     "listing_status": {
+//                         "$": "open",
+//                         "@score": "100"
+//                     },
+//                     "website": {
+//                         "$": "",
+//                         "@label": ""
+//                     }
+//                 }, {
+//                     "addr": "27 Prince St",
+//                     "city": "New York",
+//                     "closed_business": "0",
+//                     "desc": "",
+//                     "detailurl": "http:\/\/local.yahoo.com\/info-11061815-ray-s-pizza-new-york",
+//                     "distance": "0.88",
+//                     "dphone": "2129661960",
+//                     "dtitle": "Ray's Pizza",
+//                     "hiconf": "1",
+//                     "hideaddr": "N",
+//                     "id": "11061815",
+//                     "lat": "40.723046",
+//                     "lon": "-73.994559",
+//                     "mapurl": "http:\/\/maps.yahoo.com\/maps_result?q1=27+Prince+St+New+York+NY&gid1=11061815",
+//                     "nrating": "11",
+//                     "nreview": "11",
+//                     "rating": "5",
+//                     "phone": "(212) 966-1960",
+//                     "readreviewsurl": "http:\/\/local.yahoo.com\/info-11061815-ray-s-pizza-new-york#reviews",
+//                     "reviewurl": "http:\/\/local.yahoo.com\/reviews?id=11061815",
+//                     "state": "NY",
+//                     "title": "Ray's <b>Pizza<\/b>",
+//                     "type": "POI",
+//                     "websitelabel": "http:\/\/raysfamouspizza.com\/",
+//                     "zip": "10012",
+//                     "listing_status": {
+//                         "$": "open",
+//                         "@score": "100"
+//                     },
+//                     "website": {
+//                         "$": "http:\/\/raysfamouspizza.com\/",
+//                         "@label": "http:\/\/raysfamouspizza.com\/"
+//                     }
+//                 }, {
+//                     "addr": "1 E 43rd St",
+//                     "city": "New York",
+//                     "closed_business": "0",
+//                     "desc": "",
+//                     "detailurl": "http:\/\/local.yahoo.com\/info-27752823-little-italy-pizza-new-york",
+//                     "distance": "3.08",
+//                     "dphone": "2126873660",
+//                     "dtitle": "Little Italy Pizza",
+//                     "hiconf": "1",
+//                     "hideaddr": "N",
+//                     "id": "27752823",
+//                     "lat": "40.75416",
+//                     "lon": "-73.980343",
+//                     "mapurl": "http:\/\/maps.yahoo.com\/maps_result?q1=1+E+43rd+St+New+York+NY&gid1=27752823",
+//                     "nrating": "7",
+//                     "nreview": "7",
+//                     "rating": "5",
+//                     "phone": "(212) 687-3660",
+//                     "readreviewsurl": "http:\/\/local.yahoo.com\/info-27752823-little-italy-pizza-new-york#reviews",
+//                     "reviewurl": "http:\/\/local.yahoo.com\/reviews?id=27752823",
+//                     "state": "NY",
+//                     "title": "Little Italy <b>Pizza<\/b>",
+//                     "type": "POI",
+//                     "websitelabel": "http:\/\/www.littleitalyon43rd.com\/",
+//                     "zip": "10017",
+//                     "listing_status": {
+//                         "$": "open",
+//                         "@score": "100"
+//                     },
+//                     "website": {
+//                         "$": "http:\/\/www.littleitalyon43rd.com\/",
+//                         "@label": "http:\/\/www.littleitalyon43rd.com\/"
+//                     }
+//                 }, {
+//                     "addr": "69 7th Ave S",
+//                     "city": "New York",
+//                     "closed_business": "0",
+//                     "desc": "",
+//                     "detailurl": "http:\/\/local.yahoo.com\/info-11070626-bleecker-street-pizza-new-york",
+//                     "distance": "1.22",
+//                     "dphone": "2129244466",
+//                     "dtitle": "Bleecker Street Pizza",
+//                     "hiconf": "1",
+//                     "hideaddr": "N",
+//                     "id": "11070626",
+//                     "lat": "40.731961",
+//                     "lon": "-74.003626",
+//                     "mapurl": "http:\/\/maps.yahoo.com\/maps_result?q1=69+7th+Ave+S+New+York+NY&gid1=11070626",
+//                     "nrating": "5",
+//                     "nreview": "5",
+//                     "rating": "5",
+//                     "phone": "(212) 924-4466",
+//                     "readreviewsurl": "http:\/\/local.yahoo.com\/info-11070626-bleecker-street-pizza-new-york#reviews",
+//                     "reviewurl": "http:\/\/local.yahoo.com\/reviews?id=11070626",
+//                     "state": "NY",
+//                     "title": "Bleecker Street <b>Pizza<\/b>",
+//                     "type": "POI",
+//                     "websitelabel": "http:\/\/bleekerstreetpizza.com\/",
+//                     "zip": "10014",
+//                     "listing_status": {
+//                         "$": "open",
+//                         "@score": "100"
+//                     },
+//                     "website": {
+//                         "$": "http:\/\/bleekerstreetpizza.com\/",
+//                         "@label": "http:\/\/bleekerstreetpizza.com\/"
+//                     }
+//                 }, {
+//                     "addr": "27 Avenue B",
+//                     "city": "New York",
+//                     "closed_business": "0",
+//                     "desc": "",
+//                     "detailurl": "http:\/\/local.yahoo.com\/info-38954899-solo-pizza-new-york",
+//                     "distance": "1.37",
+//                     "dphone": "2124207656",
+//                     "dtitle": "Solo Pizza",
+//                     "hiconf": "1",
+//                     "hideaddr": "N",
+//                     "id": "38954899",
+//                     "lat": "40.722318",
+//                     "lon": "-73.983025",
+//                     "mapurl": "http:\/\/maps.yahoo.com\/maps_result?q1=27+Avenue+B+New+York+NY&gid1=38954899",
+//                     "nrating": "5",
+//                     "nreview": "5",
+//                     "rating": "5",
+//                     "phone": "(212) 420-7656",
+//                     "readreviewsurl": "http:\/\/local.yahoo.com\/info-38954899-solo-pizza-new-york#reviews",
+//                     "reviewurl": "http:\/\/local.yahoo.com\/reviews?id=38954899",
+//                     "state": "NY",
+//                     "title": "Solo <b>Pizza<\/b>",
+//                     "type": "POI",
+//                     "websitelabel": "http:\/\/www.solopizzanyc.com",
+//                     "zip": "10009",
+//                     "listing_status": {
+//                         "$": "open",
+//                         "@score": "100"
+//                     },
+//                     "website": {
+//                         "$": "http:\/\/www.solopizzanyc.com",
+//                         "@label": "http:\/\/www.solopizzanyc.com"
+//                     }
+//                 }, {
+//                     "addr": "233 Bleecker St",
+//                     "city": "New York",
+//                     "closed_business": "0",
+//                     "desc": "",
+//                     "detailurl": "http:\/\/local.yahoo.com\/info-11072188-joe-s-pizza-new-york",
+//                     "distance": "1.13",
+//                     "dphone": "2123661182",
+//                     "dtitle": "Joe's Pizza",
+//                     "hiconf": "1",
+//                     "hideaddr": "N",
+//                     "id": "11072188",
+//                     "lat": "40.730529",
+//                     "lon": "-74.002403",
+//                     "mapurl": "http:\/\/maps.yahoo.com\/maps_result?q1=233+Bleecker+St+New+York+NY&gid1=11072188",
+//                     "nrating": "7",
+//                     "nreview": "7",
+//                     "rating": "4.5",
+//                     "phone": "(212) 366-1182",
+//                     "readreviewsurl": "http:\/\/local.yahoo.com\/info-11072188-joe-s-pizza-new-york#reviews",
+//                     "reviewurl": "http:\/\/local.yahoo.com\/reviews?id=11072188",
+//                     "state": "NY",
+//                     "title": "Joe's <b>Pizza<\/b>",
+//                     "type": "POI",
+//                     "websitelabel": "http:\/\/newyork.citysearch.com\/profile\/external\/7117701\/new_york_ny\/joe_s_pizza.html",
+//                     "zip": "10014",
+//                     "listing_status": {
+//                         "$": "open",
+//                         "@score": "100"
+//                     },
+//                     "website": {
+//                         "$": "http:\/\/newyork.citysearch.com\/profile\/external\/7117701\/new_york_ny\/joe_s_pizza.html",
+//                         "@label": "http:\/\/newyork.citysearch.com\/profile\/external\/7117701\/new_york_ny\/joe_s_pizza.html"
+//                     }
+//                 }, {
+//                     "addr": "3 Maiden Ln, Apt 7",
+//                     "city": "New York",
+//                     "closed_business": "0",
+//                     "desc": "",
+//                     "detailurl": "http:\/\/local.yahoo.com\/info-11159757-mardigras-pizza-new-york",
+//                     "distance": "0.35",
+//                     "dphone": "2122336066",
+//                     "dtitle": "Mardigras Pizza",
+//                     "hiconf": "1",
+//                     "hideaddr": "N",
+//                     "id": "11159757",
+//                     "lat": "40.709819",
+//                     "lon": "-74.00969",
+//                     "mapurl": "http:\/\/maps.yahoo.com\/maps_result?q1=3+Maiden+Ln%2C+Apt+7+New+York+NY&gid1=11159757",
+//                     "nrating": "3",
+//                     "nreview": "3",
+//                     "rating": "5",
+//                     "phone": "(212) 233-6066",
+//                     "readreviewsurl": "http:\/\/local.yahoo.com\/info-11159757-mardigras-pizza-new-york#reviews",
+//                     "reviewurl": "http:\/\/local.yahoo.com\/reviews?id=11159757",
+//                     "state": "NY",
+//                     "title": "Mardigras <b>Pizza<\/b>",
+//                     "type": "POI",
+//                     "websitelabel": "",
+//                     "zip": "10038",
+//                     "listing_status": {
+//                         "$": "open",
+//                         "@score": "100"
+//                     },
+//                     "website": {
+//                         "$": "",
+//                         "@label": ""
+//                     }
+//                 }, {
+//                     "addr": "125 Allen St",
+//                     "city": "New York",
+//                     "closed_business": "0",
+//                     "desc": "",
+//                     "detailurl": "http:\/\/local.yahoo.com\/info-43523140-ciao-bella-pizzeria-new-york",
+//                     "distance": "0.96",
+//                     "dphone": "2123881777",
+//                     "dtitle": "Ciao Bella Pizzeria",
+//                     "hiconf": "1",
+//                     "hideaddr": "N",
+//                     "id": "43523140",
+//                     "lat": "40.719951",
+//                     "lon": "-73.990322",
+//                     "mapurl": "http:\/\/maps.yahoo.com\/maps_result?q1=125+Allen+St+New+York+NY&gid1=43523140",
+//                     "nrating": "3",
+//                     "nreview": "3",
+//                     "rating": "5",
+//                     "phone": "(212) 388-1777",
+//                     "readreviewsurl": "http:\/\/local.yahoo.com\/info-43523140-ciao-bella-pizzeria-new-york#reviews",
+//                     "reviewurl": "http:\/\/local.yahoo.com\/reviews?id=43523140",
+//                     "state": "NY",
+//                     "title": "Ciao Bella Pizzeria",
+//                     "type": "POI",
+//                     "websitelabel": "http:\/\/ciaobellapizzerianyc.com\/",
+//                     "zip": "10002",
+//                     "listing_status": {
+//                         "$": "open",
+//                         "@score": "100"
+//                     },
+//                     "website": {
+//                         "$": "http:\/\/ciaobellapizzerianyc.com\/",
+//                         "@label": "http:\/\/ciaobellapizzerianyc.com\/"
+//                     }
+//                 }, {
+//                     "addr": "8 Cortlandt St",
+//                     "city": "New York",
+//                     "closed_business": "0",
+//                     "desc": "",
+//                     "detailurl": "http:\/\/local.yahoo.com\/info-11043903-majestic-pizza-new-york",
+//                     "distance": "0.35",
+//                     "dphone": "2123494046",
+//                     "dtitle": "Majestic Pizza",
+//                     "hiconf": "1",
+//                     "hideaddr": "N",
+//                     "id": "11043903",
+//                     "lat": "40.710006",
+//                     "lon": "-74.010092",
+//                     "mapurl": "http:\/\/maps.yahoo.com\/maps_result?q1=8+Cortlandt+St+New+York+NY&gid1=11043903",
+//                     "nrating": "3",
+//                     "nreview": "3",
+//                     "rating": "4.5",
+//                     "phone": "(212) 349-4046",
+//                     "readreviewsurl": "http:\/\/local.yahoo.com\/info-11043903-majestic-pizza-new-york#reviews",
+//                     "reviewurl": "http:\/\/local.yahoo.com\/reviews?id=11043903",
+//                     "state": "NY",
+//                     "title": "Majestic <b>Pizza<\/b>",
+//                     "type": "POI",
+//                     "websitelabel": "http:\/\/www.majesticpizzatogo.com",
+//                     "zip": "10007",
+//                     "listing_status": {
+//                         "$": "open",
+//                         "@score": "100"
+//                     },
+//                     "website": {
+//                         "$": "http:\/\/www.majesticpizzatogo.com",
+//                         "@label": "http:\/\/www.majesticpizzatogo.com"
+//                     }
+//                 }]
+//             }
+//         }
+//     }
+// });

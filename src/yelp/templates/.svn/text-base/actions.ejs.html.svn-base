@@ -1,0 +1,14 @@
+<ul class="actions clearfix">
+    <li class="first-child">
+        <button title="Directions" type="button" class="noborder directions">Directions</button>
+    </li>
+    <li>
+        <button title="Find Nearby" type="button" class="noborder nearby action-form-button">Find Nearby</button>
+    </li>
+    <li>
+        <button title="Zoom Here" type="button" class="noborder zoom">Zoom Here</button>
+    </li>
+    <li class="last-child">
+        <button title="Share" type="button" class="noborder share action-form-button">Share</button>
+    </li>
+</ul>

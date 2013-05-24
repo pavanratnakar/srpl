@@ -1,15 +1,22 @@
 <% 
     var photos = b.getThumbnailGalleryPhotos();
     if (photos.length > 0) { %>
-    <div class="srpl-container">
-        <ul class="srpl-gallery clearfix">
-        <%
-        photos = photos.slice(0,Y.srpl.config('business.galleryCount'));
-        Y.each(photos, function(p,i){ %>
-            <li class="<%=(i===0) ? 'first-child' : ''%> <%=(i===(photos.length-1)) ? 'last-child' : ''%> srpl-gallery-thumbnails">
-                <img src="<%= p %>" alt="<%= b.displayValue() %>"/>
-            </li>
-        <%}); %>
-        </ul>
+    <div class="srpl-container srpl-gallery">
+        <div class="srpl-container-body">
+            <ul class="clearfix">
+            <%
+            photos = photos.slice(0,Y.srpl.config('business.galleryCount'));
+            Y.each(photos, function(p,i){ %>
+                <li class="<%=(i===0) ? 'first-child' : ''%> <%=(i===(photos.length-1)) ? 'last-child' : ''%> srpl-gallery-thumbnails">
+                    <img src="<%= p %>" alt="<%= b.displayValue() %>"/>
+                </li>
+            <%}); %>
+            </ul>
+            <ul class="srpl-actions clearfix">
+                <li class="first-child">
+                    <a href="<%=b.getBusinessUrl()%>" title="Add Photos">Add Photos</a>
+                </li>
+            </ul>
+        </div>
     </div>
 <% }%>

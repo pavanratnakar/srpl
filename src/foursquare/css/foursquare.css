@@ -1,0 +1,12 @@
+.srpl-overlay .yui3-carousel-content .srpl-foursquare li,
+.srpl-foursquare li{
+	padding:		0.2em 0;
+	line-height:    1.3em;
+}
+
+.srpl-foursquare span.tips{
+	color:			grey;
+}
+
+/* YUI CSS Detection Stamp */
+#yui3-css-stamp.srpl-foursquare-css { display: none; }

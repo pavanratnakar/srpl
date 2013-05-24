@@ -1,0 +1,29 @@
+<div class="business-container <%=(businessMap)? 'businessMap': ''%>">
+    <ul class="listing">
+    <% Y.each(businesses, function(b,i){ %>
+        <li id="business-listing-<%=i+1%>" class="clearfix business <%=(i===0) ? ' first-child' : ''%> <%=(i===(businesses.length-1)) ? ' last-child' : ''%>" data-business-id="<%= b.get('id') %>">
+            <div class="clearfix">
+                <div class="icon orange f-left">
+                    <i class="i_left"></i>
+                    <div class="i_center">
+                        <span>
+                            <% if (businessMap) { %>
+                                <i class="star"></i>
+                            <% } else { %>
+                                <%= (i+1) %>
+                            <% } %>
+                        </span>
+                    </div>
+                    <i class="i_right"></i>
+                </div>
+                <div class="details f-left">
+                    <%= Y.myc.Businesses.templates.business_title({b:b,moreInfo:false}) %>
+                    <%= Y.myc.Businesses.templates.business_main_content({b:b}) %>
+                    <%= Y.myc.Businesses.templates.business_sub_content({b:b}) %>
+                </div>
+            </div>
+            <%= Y.myc.Businesses.templates.actions() %>
+        </li>
+    <% }); %>
+    </ul>
+</div>

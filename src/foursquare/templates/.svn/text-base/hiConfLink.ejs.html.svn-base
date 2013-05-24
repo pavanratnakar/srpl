@@ -1,0 +1,11 @@
+<%
+var seeAllLink = "See all " + total + " results for " + business;
+if (locationName) {
+	seeAllLink += " near " + locationName;
+}
+%>
+<div class="hiConf-link">
+	<a title="<%= seeAllLink %>" href="javascript:void(0);">
+		<%= seeAllLink %>
+	</a>
+</div>

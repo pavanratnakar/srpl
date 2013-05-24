@@ -1,64 +1,70 @@
 <% if (b.get('overview')) { %>
 <div class="srpl-container srpl-detail-container">
     <% if (!Y.Lang.isObject(b.get('overview').hrs)) { %>
-    <div class="yui3-g srpl-content-container">
-        <div class="yui3-u-1-4">Hours</div>
-        <div class="yui3-u-3-4">
-            <%
-            Y.each(b.get('overview').hrs.split(','),function(h,i){
-            %>
-            <p><%=h%><p>
-            <%
-            });
-            %>
+    <div class="srpl-container-body">
+        <div class="yui3-g srpl-container-sub">
+            <div class="yui3-u-1-4">Hours</div>
+            <div class="yui3-u-3-4">
+                <%
+                Y.each(b.get('overview').hrs.split(','),function(h,i){
+                %>
+                <p><%=h%><p>
+                <%
+                });
+                %>
+            </div>
         </div>
-    </div>
-    <% } 
-    var categories = b.getCategories();
-    if (categories.length > 0) { %>
-    <div class="yui3-g srpl-content-container">
-        <div class="yui3-u-1-4">Category</div>
-        <div class="yui3-u-3-4">
-        <%
-            Y.each(categories,function(c,i){%>
-            <a target="<%= Y.srpl.config('linking.target') %>" href="<%= b.getCateoryUrl(c) %>" title="<%= c.name %>"><%= c.name %></a><%= (i === categories.length-1 || i === 0) ? '' : ', ' %>
-        <%});%>
+        <% } 
+        var categories = b.getCategories();
+        if (categories.length > 0) { %>
+        <div class="yui3-g srpl-container-sub">
+            <div class="yui3-u-1-4">Category</div>
+            <div class="yui3-u-3-4">
+            <%
+                Y.each(categories,function(c,i){%>
+                <a target="<%= Y.srpl.config('linking.target') %>" href="<%= b.getCateoryUrl(c) %>" title="<%= c.name %>"><%= c.name %></a><%= (i === categories.length-1 || i === 0) ? '' : ', ' %>
+            <%});%>
+            </div>
         </div>
-    </div>
-    <% } if (!Y.Lang.isObject(b.get('overview').payment)) { %>
-    <div class="yui3-g srpl-content-container">
-        <div class="yui3-u-1-4">Payment</div>
-        <div class="yui3-u-3-4"><%= b.get('overview').payment %></div>
-    </div>
-    <% } if (!Y.Lang.isObject(b.get('overview').cuisine)) { %>
-    <div class="yui3-g srpl-content-container">
-        <div class="yui3-u-1-4">Cuisine</div>
-        <div class="yui3-u-3-4"><%= b.get('overview').cuisine %></div>
-    </div>
-    <% } if (!Y.Lang.isObject(b.get('overview').ambiance)) { %>
-    <div class="yui3-g srpl-content-container">
-        <div class="yui3-u-1-4">Ambiance</div>
-        <div class="yui3-u-3-4"><%= b.get('overview').ambiance %></div>
-    </div>
-    <% } if (!Y.Lang.isObject(b.get('overview').feature)) { %>
-    <div class="yui3-g srpl-content-container">
-        <div class="yui3-u-1-4">Feature</div>
-        <div class="yui3-u-3-4"><%= b.get('overview').feature %></div>
-    </div>
-    <% } if (!Y.Lang.isObject(b.get('overview').dress_code)) { %>
-    <div class="yui3-g srpl-content-container">
-        <div class="yui3-u-1-4">Attire</div>
-        <div class="yui3-u-3-4"><%= b.get('overview').dress_code %></div>
-    </div>
-    <% } if (!Y.Lang.isObject(b.get('overview').price)) { %>
-    <div class="yui3-g srpl-content-container">
-        <div class="yui3-u-1-4">Price</div>
-        <div class="yui3-u-3-4"><%= b.get('overview').price %></div>
-    </div>
-    <% } %>
-    <div class="actions clearfix">
-        <a href="<%= b.getBusinessUrl() %>" class="f-left" title="View More Details">View More Details</a>
-        <a href="<%= b.getBusinessUrl() %>" class="f-right" title="Suggest an edit">Suggest an edit</a>
+        <% } if (!Y.Lang.isObject(b.get('overview').payment)) { %>
+        <div class="yui3-g srpl-container-sub">
+            <div class="yui3-u-1-4">Payment</div>
+            <div class="yui3-u-3-4"><%= b.get('overview').payment %></div>
+        </div>
+        <% } if (!Y.Lang.isObject(b.get('overview').cuisine)) { %>
+        <div class="yui3-g srpl-container-sub">
+            <div class="yui3-u-1-4">Cuisine</div>
+            <div class="yui3-u-3-4"><%= b.get('overview').cuisine %></div>
+        </div>
+        <% } if (!Y.Lang.isObject(b.get('overview').ambiance)) { %>
+        <div class="yui3-g srpl-container-sub">
+            <div class="yui3-u-1-4">Ambiance</div>
+            <div class="yui3-u-3-4"><%= b.get('overview').ambiance %></div>
+        </div>
+        <% } if (!Y.Lang.isObject(b.get('overview').feature)) { %>
+        <div class="yui3-g srpl-container-sub">
+            <div class="yui3-u-1-4">Feature</div>
+            <div class="yui3-u-3-4"><%= b.get('overview').feature %></div>
+        </div>
+        <% } if (!Y.Lang.isObject(b.get('overview').dress_code)) { %>
+        <div class="yui3-g srpl-container-sub">
+            <div class="yui3-u-1-4">Attire</div>
+            <div class="yui3-u-3-4"><%= b.get('overview').dress_code %></div>
+        </div>
+        <% } if (!Y.Lang.isObject(b.get('overview').price)) { %>
+        <div class="yui3-g srpl-container-sub">
+            <div class="yui3-u-1-4">Price</div>
+            <div class="yui3-u-3-4"><%= b.get('overview').price %></div>
+        </div>
+        <% } %>
+        <ul class="srpl-actions clearfix">
+            <li class="first-child">
+                <a href="<%= b.getBusinessUrl() %>" class="f-left" title="View More Details">View More Details</a>
+            </li>
+            <li class="last-child f-right">
+                <a href="<%= b.getBusinessUrl() %>" class="f-right" title="Suggest an edit">Suggest an edit</a>
+            <li>
+        </ul>
     </div>
 </div>
 <% } %>

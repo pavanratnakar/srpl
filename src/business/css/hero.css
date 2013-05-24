@@ -13,7 +13,7 @@
     left:               16px;
 }
 
-.srpl .srpl-hero-container .actions li button {
+.srpl .srpl-hero-container .srpl-actions li button {
     background-color:   #889A2D;
     color:              #FFF;
     padding:            10px 15px 10px 15px;
@@ -26,16 +26,16 @@
     font-size:          1.1em;
 }
 
-.srpl .srpl-hero-container .rating-review {
+.srpl .srpl-hero-container .srpl-rating-review {
     padding:            15px 0;
     line-height:        1em;
 }
 
-.srpl .srpl-hero-container .rating-review a{
+.srpl .srpl-hero-container .srpl-rating-review a{
     color:              #FFF;
 }
 
-.srpl .srpl-hero-container ul.actions{
+.srpl .srpl-hero-container ul.srpl-actions{
     margin-top:         10px;
 }
 

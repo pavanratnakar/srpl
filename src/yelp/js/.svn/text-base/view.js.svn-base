@@ -1,0 +1,871 @@
+/**
+ * Create a new myc-businesses view class that extends Y.View and renders the current
+ * state of a myc-businesses instance.
+ * @module myc-businesses-view
+ * @requires
+    view,
+    ymaps-geolocation,
+    myc-business-model,
+    myc-locals,
+    myc-businesses-templates,
+    myc-ads-business-view,
+    myc-util,
+    myc-config,
+    myc-lib-pagination-plugin,
+    myc-share-plugin,
+    myc-nearby-plugin',
+    myc-businesses-css,
+    myc-lib-css,
+    myc-config
+*/
+YUI.add('myc-businesses-view', function(Y){
+
+    var BusinessesView = function(){
+        BusinessesView.superclass.constructor.apply(this, arguments);
+    };
+
+    // Attributes and static properties for myc-businesses View.
+    BusinessesView.ATTRS = {
+        ads : {
+            valueFn: function(){
+                return new Y.myc.Ads.Business.View({
+                    container : this.get('container')
+                });
+            }
+        },
+        localModel : {
+            valueFn: function(){
+                return new Y.myc.Locals.Model();
+            }
+        },
+        local : {
+            setter: function(value){
+                if (!value || !value.details) {
+                    return {details : {searchtotal: 0, business: '', location: '0,0', locationsource: 'implicit'}, businesses: []};
+                } else {
+                    return value;
+                }
+            }
+        }, // local data consists of details and array of business objects
+        businesses :     null,
+        location :      null, // location object
+        container :      null, // view container
+        q:              null, // query value
+        boundingBox:    {
+            value: null
+        }, // bounding box
+        pageNumber:     {
+            value:      Y.myc.config('businesses.pageNumber')
+        },
+        hiConfFlag:     {
+            value:      Y.myc.config('businesses.hiConf')
+        },
+        state: {
+            getter: function(){
+                var t = this,
+                    o = {};
+
+                o.b = t.get('local').details.stx;
+
+                o.n = t.get('location')? t.get('local').details.csz : null;
+                if (t.get('requeryParams')){
+                    var r = t.get('requeryParams');
+                    o.nllr = [r.lat, r.lon, r.radius].join(',');
+                }
+                if(t.get('pageNumber') > 1){
+                    o.p = t.get('pageNumber');
+                }
+                if(t.get('hiConfFlag') !== Y.myc.config('businesses.hiConf')){
+                    o.conf = 0;
+                }
+                if (!t.get('showLocationName')){
+                    o.hn = 1;
+                }
+                if (t.get('location') && t.get('showLocationName') && t.get('showLocationMarker')){
+                    o.sm = 1;
+                }
+                if (t.get('location') && t.get('location') instanceof Y.myc.Business.Model){
+                    o.bt = t.get('location').displayValue();
+                    o.nid = t.get('location').get('id').split("_")[1];
+                }
+                if (t.get('businessMap')){
+                    // If it's a business map, then we are definitely showing only one business
+                    o.bid = (t.get('local') && t.get('local').businesses && t.get('local').businesses[0] && t.get('local').businesses[0].get('id')) || null;
+                }
+                return o;
+            }
+        },
+        showLocationName: {
+            value: true // by default we try to show the location name, and so the default value is true
+        },
+        requeryParams: {
+            value: null
+        },
+        queryCenter: {
+            value: null
+        },
+        renderInProgress: {
+            value: false
+        },
+        centeringEnabled: {
+            value: true
+        },
+        lastFetchedAdsData: {
+            value: null
+        },
+        keepLocationMarker: {
+            value: false
+        },
+        showLocationMarker: {
+            value: false
+        },
+        nearbyLocation: {
+            value: null
+        },
+        businessMap: {
+            value: false
+        }
+    };
+
+    Y.extend(BusinessesView, Y.View, {
+        // Assign base location template that will be used to render the myc-business.
+        template: Y.myc.Businesses.templates.base,
+        noResultsTemplate: Y.myc.Businesses.templates.not_found,
+        actionListners : [],
+        eventListners : [],
+        // Specify delegated DOM events to attach to the myc-businesses container.
+        events:{
+            // events specific to business list
+            '.business .details':{
+                'mouseover':'listEnter',
+                'mouseout': 'listExit',
+                'focus':    'listEnter',
+                'blur':     'listExit',
+                'click':    'listClick'
+            },
+            '.business .icon':{
+                'mouseover':'listEnter',
+                'mouseout': 'listExit',
+                'focus':    'listEnter',
+                'blur':     'listExit',
+                'click':    'listClick'
+            },
+            '.action-form-button':{
+                'click':     'actionFormButtonClick'
+            },
+            '.zoom':{
+                'click':     'zoomClick'
+            },
+            '.directions':{
+                'click':     'directionsClick'
+            },
+            '.hiConf-link a':{
+                'click':    'showAll'
+            },
+            '.seeMore-link a':{
+                'click': 'seeMore'
+            },
+            '.actions button':{
+                'keydown':     'actionKeydown'
+            }
+        },
+        /**
+        * @method initEvents
+        * @return {void}
+        */
+        initEvents : function(){
+            var t = this,
+                paginateListener = t.get('container').pagination.on('paginate',function(data){
+                    t.set('pageNumber', data.number);
+                    t.paginate();
+                });
+            this.eventListners.push(paginateListener);
+        },
+        /**
+        * The initializer function will run when a view is instantiated
+        * @method initializer
+        * @return {void}
+        */
+        initializer: function(config){
+            this.eventListeners = [];
+            this.actionListners = [];
+            this.get('container').plug(Y.myc.Plugin.Pagination);
+            this.initEvents();
+        },
+        /**
+        * Focus location name
+        * @method focus
+        * @return {void}
+        */
+        focus : function(){
+            if (this.get('container').one('.actions')) {
+                this.get('container').all('.actions').item(0).all('li').item(0).one('button').focus();
+            }
+        },
+        /**
+        * @method handleAds
+        * @return {void}
+        */
+        handleAds : function(e){
+            e = e || {};
+            if( Y.myc.config('businesses.ads') ){
+                var t = this;
+
+                if (!t.get('location')) {
+                    if (t.get('lastFetchedAdsData')) {
+                        t.get('ads').render({
+                            'data' : t.get('lastFetchedAdsData'),
+                            'append' : e.singleAd
+                        });
+                    }
+                    return; // In case the user has pan/zoomed from the previous known location, keep the same ads
+                }
+                t.get('ads').get('model').query({
+                    'partner' : 'business',
+                    'count' : (e.singleAd === true) ? 1 : 3,
+                    'location' : t.get('location'),
+                    'local' : t.get('local'),
+                    'enableFavicon' : 1
+                }, function(err, data){
+                    if (data) {
+                        t.set('lastFetchedAdsData', data);
+                        t.get('ads').render({
+                            'data' : data,
+                            'append' : e.singleAd
+                        });
+                        t.fire('resize',{'source':'businessYsm','scrollTop':0});
+                    }
+                });
+            }
+        },
+        /**
+        * @method notFound - for now leveraging location not found functionality
+        * @return {void}
+        */
+        notFound : function(){
+            this.fire('notFound');
+        },
+        /**
+        * @method checkHiConf
+        * @return {integer}
+        */
+        hiConfResults : function(){
+            var t = this,
+                localWithHiConf = 0,
+                businesses = [];
+
+            Y.each(t.get('local').businesses,function(value,index){
+                if(value.get('hiconf')===1){
+                    businesses.push(value);
+                    localWithHiConf++;
+                }
+            });
+            if (localWithHiConf <= Y.myc.config('businesses.hiConfCheckNumber') && localWithHiConf > 0) {
+                t.setAttrs({
+                    'businesses' : businesses
+                });
+                return localWithHiConf;
+            }
+            return false;
+        },
+        /**
+        * render businesses view using template
+        * also set bounding box
+        * @method render
+        * @return {boolean}
+        */
+        render: function(type){
+            var t = this,
+                n,
+                hiConfResultsLength = false;
+
+            type = type || null;
+
+            t.fire('render:init',{
+                type : type
+            });
+
+            // Add the id to the location to make it conflict free and add an id only if not added already
+            if (t.get('location')) {
+                if (!t.get('location').get('id')) {
+                    t.get('location').set('id', 'bizNearLocation_1');
+                } else if (t.get('location').get('id').indexOf('bizNearLocation_') === -1) {
+                    t.get('location').set('id', 'bizNearLocation_' + t.get('location').get('id'));
+                }
+            }
+
+            // if no local value exists, show not found
+            if (!t.get('local')) {
+                t.notFound();
+                return false;
+            }
+            if (t.get('local').details && t.get('local').details.localurl) {
+                Y.log("XmlLocal API call : " + t.get('local').details.localurl);
+            }
+
+            if (t.get('local').details && t.get('local').details.locationsource === "implicit") {
+                //t.set('centeringEnabled', false);
+                t.set('showLocationName', false);
+                // If we have the nearbyLocation set, we preserve it
+                if (t.get('nearbyLocation')) {
+                    // If the location last used is a street level location
+                    if (t.get('nearbyLocation') && parseInt(t.get('nearbyLocation').get('quality'), 10) >= 80) {
+                        t.set('keepLocationMarker', true);
+                    }
+                }
+            }
+
+            if (t.get('local').details && t.get('local').details.locationsource !== "implicit" && t.get('location')) {
+                // For explicit queries the blue marker is shown for the location
+                t.set('nearbyLocation', t.get('location'));
+                if ( parseInt(t.get('nearbyLocation').get('quality'), 10) < 80 || t.get('businessMap') ) {
+                    t.set('showLocationMarker', false);
+                }
+            }
+
+            var businesses = t.get('local').businesses,
+                pageNumber = t.get('pageNumber') || 1;
+
+            t.set('businesses',t.get('local').businesses);
+            if (t.get('hiConfFlag') === true && t.get('pageNumber') === 1) {
+                hiConfResultsLength = t.hiConfResults();
+            }
+            // set bounding box
+            if (t.get('centeringEnabled') && t.get('businesses').length) {
+                if (t.get('location') && t.get('showLocationName') && t.get('showLocationMarker') && !(pageNumber === 1 && t.get('businesses').length === 1 /* exact match test */)){
+                    // if (t.get('useAdaptiveBB')) {
+                    //     t.set('boundingBox',Y.myc.util.adaptiveBb(t.get('businesses'), t.get('location')));
+                    // } else {
+                    t.set('boundingBox',Y.myc.util.bb(t.get('businesses'), t.get('location')));
+                    // }
+                } else {
+                    t.set('boundingBox',Y.myc.util.bb(t.get('businesses')));
+                }
+            }
+            if (t.get('businesses').length === 0){
+                t.get('container').set('innerHTML', t.noResultsTemplate({
+                    q : t.get('local').details.business,
+                    n : (t.get('location') && t.get('showLocationName'))? t.get('location').getNamedAddress(): null
+                }));
+                // [bug 5904046]
+                t.get('container').show();
+                t.fire('render:noResultsFound',{
+                    type : type
+                });
+                return false;
+            }
+            // set sidebar notification
+            t.get('container').ancestor('.sidebar-content').one('.sidebar-title').setContent(Y.myc.Businesses.templates.business_notification({
+                business : t.get('local').details.business,
+                locationName : (t.get('location') && t.get('showLocationName'))? t.get('location').getNamedAddress(): null,
+                total : t.get('local').details.searchtotal
+            }));
+            // set sidebar content
+            t.get('container').set('innerHTML', t.template({
+                businesses : t.get('businesses'),
+                q : t.get('q'),
+                businessMap : t.get('businessMap')
+            }));
+            if (t.get('businessMap')){
+                t.get('container').append(Y.myc.Businesses.templates.seeMoreLink({
+                    locationName : (t.get('location') && t.get('showLocationName'))? t.get('location').getNamedAddress() : null,
+                    business : t.get('local').details.business
+                }));
+            }
+            // check for hiconf
+            if (!hiConfResultsLength) {
+                // check for pagination
+                if(t.get('local').details.searchtotal > Y.myc.config('pagination.limit')) {
+                    t.get('container').pagination.setAttrs({
+                        current : t.get('pageNumber') || 1,
+                        limit : Y.myc.config('pagination.limit'),
+                        total : t.get('local').details.searchtotal
+                    });
+                    t.get('container').pagination.render();
+                }
+            } else if(t.get('local').businesses.length>1 && (t.get('local').businesses.length!==hiConfResultsLength)) {
+                // show hi conf link
+                t.get('container').append(Y.myc.Businesses.templates.hiConfLink({
+                    locationName : (t.get('location') && t.get('showLocationName'))? t.get('location').getNamedAddress() : null,
+                    total : t.get('local').details.searchtotal,
+                    business : t.get('local').details.business
+                }));
+            }
+            // [bug 5904046]
+            t.get('container').show();
+            t.fire('resize',{'source':'businessSuccess','scrollTop':0});
+            t.handleAds({
+                singleAd : (t.get('local').businesses.length===1) || (hiConfResultsLength)? true : false
+            });
+            t.fire('render:success',{
+                businesses : t.get('businesses'),
+                pageNumber : pageNumber,
+                type : type
+            });
+            t.focus();
+            t.fire('render:complete',{
+                type : type
+            });
+            return true;
+        },
+        /**
+        * map center has changed by user activity, to the given mapCenter
+        * choose whether to do the requery or not
+        * @method panRequery
+        * @return {void}
+        */
+        panRequery: function(e){
+            // In panning the location deosnot make any more sense
+            this.set('location', null);
+            this.requery(e);
+        },
+        /**
+        * requery on the passed lat,lon, radius
+        * @method paginate
+        * @return {void}
+        */
+        requery: function(e){
+            var t = this,
+                options = {
+                    stx: t.get('local').details.business,
+                    lat: e.lat,
+                    lon: e.lon,
+                    radius: e.radius,
+                    details: t.get('local').details
+                };
+
+            if (!t.get('location') && options.details.locationsource && options.details.locationsource !== "implicit") {
+                options.details.locationsource = "implicit";
+            }
+            t.set('requeryParams', e);
+            t.set('centeringEnabled', false);
+            t.set('pageNumber', Y.myc.config('businesses.pageNumber'));
+            t.set('keepLocationMarker', true);
+            t.fire('localQuery:start');
+
+            t.get('localModel').query(options, function(err, data){
+                if (!err) {
+                    t.set('local',data.local);
+                    t.render('requery');
+                }
+                t.fire('localQuery:complete');
+            });
+        },
+        /**
+        * paginate over the business listings
+        * @method paginate
+        * @return {void}
+        */
+        paginate: function(){
+            var t = this,
+                options = {
+                    stx: t.get('local').details.stx,
+                    begin: ((t.get('pageNumber') - 1)*Y.myc.config('pagination.limit'))+1,
+                    details: t.get('local').details
+                };
+
+            if (!t.get('centeringEnabled') && t.get('requeryParams')) {
+                delete options.csz;
+                var queryParams = this.get('requeryParams');
+                options.lat = queryParams.lat;
+                options.lon = queryParams.lon;
+                options.radius = queryParams.radius;
+            } else {
+                options.csz = t.get('local').details.csz;
+            }
+
+            t.fire('localQuery:start');
+            t.get('localModel').query(options, function(err, data){
+                if (!err) {
+                    t.set('local',data.local);
+                    t.render();
+                } else {
+                    // Will add appropriate error handling later
+                    t.set('pageNumber', t.get('pageNumber') - 1);
+                }
+                t.fire('localQuery:complete');
+            });
+        },
+        /**
+        * @method shareEvents
+        * @return {void}
+        */
+        shareEvents : function(node){
+            var t = this,
+                shareListener;
+
+            shareListener = node.share.on({
+                'render':function(e){
+                    t.fire('resize',{'source':'shareRender'});
+                },
+                'close':function(e){
+                    if (node.one('.active')) {
+                        node.one('.active').one('button').focus();
+                        Y.myc.util.removeActiveBorder(node.one('.active'));
+                        t.fire('share:toggle',{
+                            state : false
+                        });
+                        t.fire('resize',{'source':'shareClose'});
+                    }
+                },
+                'mail:toggle':function(e){
+                    t.fire('mail:toggle',e);
+                }
+            });
+            this.actionListners.push(shareListener);
+        },
+        /**
+        * @method handleShareRender
+        * @return {void}
+        */
+        handleShare : function(parentContainer){
+            if (!parentContainer.one('.share-form-container')) {
+                var sfc = Y.Node.create('<div class="share-form-container actions-form"></div>'),
+                    index = parseInt(parentContainer.get('id').replace('business-listing-',''),10)-1,
+                    business = this.get('businesses')[index];
+
+                parentContainer.append(sfc);
+                parentContainer.plug(Y.myc.Plugin.Share,{
+                    'container': sfc,
+                    'id': parentContainer.get('id').replace('business-listing-',''),
+                    'url' : business.get('detailurl'),
+                    'description' : business.getNamedAddress()
+                });
+                this.shareEvents(parentContainer);
+            }
+            parentContainer.share.render();
+        },
+        /**
+        * @method nearbyEvents
+        * @return {void}
+        */
+        nearbyEvents : function(node){
+            var t = this,
+                shareCloseListener = node.nearby.on({
+                    'render':function(e){
+                        t.fire('resize',{'source':'nearbyRender'});
+                    },
+                    'close':function(e){
+                        if(node.one('.active')){
+                            node.one('.active').one('button').focus();
+                            Y.myc.util.removeActiveBorder(node.one('.active'));
+                            t.fire('nearby:toggle',{
+                                state : false
+                            });
+                            t.fire('resize',{'source':'nearbyClose'});
+                        }
+                    },
+                    'close:keydown':function(e){
+                        if(e.type==='tab'){
+                            node.one('button.nearby').ancestor('li').next().one('button').focus();
+                        }
+                    },
+                    'input:keydown':function(e){
+                        if(e.type==='shiftTab'){
+                            node.one('button.nearby').focus();
+                        }
+                    }
+                });
+            this.actionListners.push(shareCloseListener);
+        },
+        /**
+        * @method handleNearbyRender
+        * @return {void}
+        */
+        handleNearby : function(parentContainer){
+            if (!parentContainer.one('.nearby-container')) {
+                var nfc = Y.Node.create('<div class="nearby-container actions-form"></div>'),
+                    index = parseInt(parentContainer.get('id').replace('business-listing-',''),10)-1;
+
+                parentContainer.append(nfc);
+                parentContainer.plug(Y.myc.Plugin.Nearby,{
+                    'container': nfc,
+                    'location' : this.get('businesses')[index]
+                });
+                this.nearbyEvents(parentContainer);
+            }
+            parentContainer.nearby.render();
+        },
+        /**
+        * @method detachNearbyListeners
+        * @return {void}
+        */
+        detachActionListeners: function(){
+            if (this.actionListners && this.actionListners.length>0) {
+                Y.each(this.actionListners, function(l,i){
+                    l.detach();
+                    l = null;
+                });
+                this.actionListners = [];
+            }
+        },
+        /**
+        * @method detachActionPlugins
+        * @return {void}
+        */
+        detachActionPlugins: function(){
+            this.detachActionListeners();
+            this.get('container').all('li.business').each(function(v,i){
+                v.destroy(true);
+            });
+        },
+        /**
+        * @method clear
+        * @return {void}
+        */
+        reset: function(){
+            this.setAttrs({
+                nearbyLocation: null,
+                local:          null,
+                location :      null,
+                hiConfFlag:     Y.myc.config('businesses.hiConf'),
+                q:              null
+            });
+        },
+        /**
+        * clear myc-businesses attributes.
+        * Only necessary attributes are cleared.
+        * To be called everytime render is required.
+        * @method clear
+        * @return {void}
+        */
+        clear: function(){
+            this.detachActionPlugins();
+            this.reset();
+            this.setAttrs({
+                container:      null,
+                tl:             null,
+                br:             null,
+                boundingBox:    null,
+                renderInProgress: false,
+                showLocationName: true,
+                centeringEnabled: true,
+                lastFetchedAds: null,
+                keepLocationMarker: false,
+                requeryParams: null,
+                queryCenter: null,
+                showLocationMarker: false,
+                nearbyLocation: null,
+                businessMap: false,
+                pageNumber:     Y.myc.config('businesses.pageNumber')
+            });
+            this.fire('clear');
+        },
+        /**
+        * call render by disabling hiConfFlag
+        * @method showAll
+        * @return {void}
+        */
+        showAll : function(){
+            this.set('hiConfFlag',false);
+            this.render();
+        },
+        /**
+        * Requery local API with the business and location params and call render
+        * @method seeMore
+        * @return {void}
+        */
+        seeMore : function(){
+            var t = this,
+                options = {
+                    stx: t.get('local').details.stx,
+                    csz: t.get('local').details.csz,
+                    details: t.get('local').details
+                };
+
+            t.set('businessMap', false);
+
+            t.fire('localQuery:start');
+            t.get('localModel').query(options, function(err, data){
+                if (!err) {
+                    t.set('local',data.local);
+                    t.render();
+                } else {
+                    // Will add appropriate error handling later
+                }
+                t.fire('localQuery:complete');
+            });
+        },
+        /**
+        * @method destructor
+        * @return {void}
+        */
+        destructor: function(){
+            this.detachActionPlugins();
+            this.eventListeners = Y.myc.util._destructor(this.eventListeners);
+        },
+
+        // -- Event Handlers -------------------------------------------------------
+
+        /**
+        * listing children mouse over
+        * @method listMouseover
+        * @params {e} e
+        * @return {void}
+        */
+        listEnter: function(e){
+            var target = e.currentTarget,
+                t = this,
+                index = parseInt(target.ancestor('li.business').get('id').replace('business-listing-',''),10)-1;
+
+            target.addClass('hover');
+            t.fire('listEnter',{
+                business : t.get('businesses')[index]
+            });
+        },
+        /**
+        * listing children mouse out
+        * @method listMouseout
+        * @params {e} e
+        * @return {void}
+        */
+        listExit: function(e){
+            var target = e.currentTarget,
+                t = this,
+                index = parseInt(target.ancestor('li.business').get('id').replace('business-listing-',''),10)-1;
+
+            target.removeClass('hover');
+            t.fire('listExit',{
+                business : t.get('businesses')[index]
+            });
+        },
+        /**
+        * listing children click
+        * @method listClick
+        * @params {e} e
+        * @return {void}
+        */
+        listClick: function(e){
+            if (e.target && e.target.hasClass('more-info')) {
+                // do nothing
+                return false;
+            }
+            var t = this,
+                index = parseInt(e.currentTarget.ancestor('li.business').get('id').replace('business-listing-',''),10)-1;
+
+            t.fire('listClick',{
+                business : t.get('businesses')[index]
+            });
+        },
+        /**
+        * listing zoom click
+        * @method zoomClick
+        * @params {e} e
+        * @return {void}
+        */
+        zoomClick : function(e){
+            var target = e.currentTarget,
+                t = this,
+                index = parseInt(target.ancestor('li.business').get('id').replace('business-listing-',''),10)-1;
+
+            t.fire('zoom',{
+                business : t.get('businesses')[index]
+            });
+        },
+        /**
+        * directions click
+        * @method directionsClick
+        * @params {e} e
+        * @return {void}
+        */
+        directionsClick : function(e){
+            var target = e.currentTarget,
+                t = this,
+                index = parseInt(target.ancestor('li.business').get('id').replace('business-listing-',''),10)-1;
+
+            t.fire('directionsClick',{
+                business : t.get('businesses')[index]
+            });
+        },
+        /**
+        * call render by disabling hiConfFlag
+        * @method showAll
+        * @return {void}
+        */
+        actionFormButtonClick : function(e){
+            var target = e.currentTarget,
+                t = this,
+                buttonContainer = target.ancestor('li'),
+                parentContainer = target.ancestor('li.business');
+
+            if (!buttonContainer.hasClass('active')) {
+                buttonContainer.siblings().each(function(node,index){
+                    if (node.one('button').hasClass('action-form-button')) {
+                        Y.myc.util.removeActiveBorder(node);
+                    }
+                });
+
+                if (target.hasClass('share')) {
+                    this.handleShare(parentContainer);
+                    if (parentContainer.nearby) {
+                       parentContainer.nearby.close();
+                    }
+                    t.fire('share:toggle',{
+                        state : true
+                    });
+                } else if (target.hasClass('nearby')) {
+                    this.handleNearby(parentContainer);
+                    if (parentContainer.share) {
+                        parentContainer.share.close();
+                    }
+                    t.fire('nearby:toggle',{
+                        state : true
+                    });
+                }
+                Y.myc.util.addActiveBorder(buttonContainer);
+            } else {
+                if (target.hasClass('share')) {
+                    parentContainer.share.close();
+                } else if (target.hasClass('nearby')) {
+                    parentContainer.nearby.close();
+                }
+                Y.myc.util.removeActiveBorder(buttonContainer);
+            }
+        },
+        /**
+        * @method actionKeydown
+        * @params {e} e
+        * @return {void}
+        */
+        actionKeydown : function(e){
+            var target = e.currentTarget,
+                parentContainer = target.ancestor('li.business');
+
+            if (e.shiftKey && (e.keyCode===9)) { // key press shift+tab
+                if (target.hasClass('zoom')) {
+                    if (parentContainer.nearby && parentContainer.nearby.get('state').open) {
+                        e.preventDefault();
+                        parentContainer.nearby.focus('last');
+                    }
+                }
+            } else if (e.keyCode === 9) { // key press tab
+                if (target.hasClass('nearby')) {
+                    if (parentContainer.nearby && parentContainer.nearby.get('state').open) {
+                        e.preventDefault();
+                        parentContainer.nearby.focus();
+                    }
+                }
+            }
+        }
+    });
+
+    Y.namespace('myc.Businesses');
+    Y.myc.Businesses.View = BusinessesView;
+}, '@VERSION@',{
+    requires:[
+        'view',
+        'ymaps-geolocation',
+        'myc-business-model',
+        'myc-locals',
+        'myc-businesses-templates',
+        'myc-ads-business-view',
+        'myc-util',
+        'myc-config',
+        'myc-lib-pagination-plugin',
+        'myc-share-plugin',
+        'myc-nearby-plugin',
+        'myc-businesses-css',
+        'myc-lib-css',
+        'myc-config'
+    ]
+});

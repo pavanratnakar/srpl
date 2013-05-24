@@ -1,0 +1,5 @@
+<%= Y.myc.Businesses.templates.business_title({b:b,moreInfo:true}) %>
+<div class="biz-details">
+	<%= Y.myc.Businesses.templates.business_main_content({b:b}) %>
+	<%= Y.myc.Businesses.templates.business_sub_content({b:b}) %>
+</div>

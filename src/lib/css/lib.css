@@ -140,7 +140,7 @@
 /************************************************************************
     Start of rating.css
 ************************************************************************/
-.srpl .rating-static {
+.srpl .srpl-rating-static {
     width:      75px;
     height:     14px;
     display:    block;
@@ -148,18 +148,18 @@
     line-height:0;
     font-size:  0;
 }
-.srpl .rating-50 { background-position: 0 -1187px; }
-.srpl .rating-40 { background-position: 0 -1163px; } 
-.srpl .rating-30 { background-position: 0 -1138px; }
-.srpl .rating-20 { background-position: 0 -1114px; }
-.srpl .rating-10 { background-position: 0 -1088px; }
-.srpl .rating-0 { background-position: 0 -1064px; }
+.srpl .srpl-rating-50 { background-position: 0 -1187px; }
+.srpl .srpl-rating-40 { background-position: 0 -1163px; } 
+.srpl .srpl-rating-30 { background-position: 0 -1138px; }
+.srpl .srpl-rating-20 { background-position: 0 -1114px; }
+.srpl .srpl-rating-10 { background-position: 0 -1088px; }
+.srpl .srpl-rating-0 { background-position: 0 -1064px; }
  
-.srpl .rating-5  { background-position: 0 -1036px; }
-.srpl .rating-15 { background-position: 0 -1009px; }
-.srpl .rating-25 { background-position: 0 -982px; }
-.srpl .rating-35 { background-position: 0 -955px; }
-.srpl .rating-45 { background-position: 0 -926px; }
+.srpl .srpl-rating-5  { background-position: 0 -1036px; }
+.srpl .srpl-rating-15 { background-position: 0 -1009px; }
+.srpl .srpl-rating-25 { background-position: 0 -982px; }
+.srpl .srpl-rating-35 { background-position: 0 -955px; }
+.srpl .srpl-rating-45 { background-position: 0 -926px; }
 /************************************************************************
     End of rating.css
 ************************************************************************/

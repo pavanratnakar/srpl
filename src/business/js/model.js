@@ -77,10 +77,9 @@ YUI.add('srpl-business-model', function(Y){
         "latestreview" : null,
         "categories" : null
     };
-
     Business.NAME = 'business';
 
-    Y.extend(Business, Y.View,{
+    Y.extend(Business, Y.Model,{
         /**
         * The initializer function will run when a view is instantiated
         * Has a bunch of helper functions to convert the location to various formats

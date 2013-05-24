@@ -6,9 +6,9 @@ Y.srpl.App.templates = {
     aria:Y.template('<div id="<%=id%>-aria-container" aria-live="polite"></div>'),
 		base:Y.template('<div id="srpl-wrapper-container" class="srpl"></div>'),
 		fader:Y.template('<div id="srpl-fader-container" style="display:none;">\n	<div id="srpl-fader-overlay"></div>\n</div>'),
-		list:Y.template('<li style="width:<%=width%>px;"class="srpl-business clearfix" id="srpl-<%= b %>"></li>'),
+		list:Y.template('<li style="width:<%=width%>px;"class="srpl-business" id="srpl-<%= b %>"></li>'),
 		list_container:Y.template('<ol id="srpl-container"></ol>'),
-		loader:Y.template('<div id="srpl-loader-container" style="display:none;">\n    <div class="loader big"></div>\n</div>'),
+		loader:Y.template('<div id="srpl-loader-container" style="display:none;">\n    <div class="srpl-loader big"></div>\n</div>'),
 		overlay:Y.template('<button class="image prev overlay-button" style="display:none;">Previous</button>\n<div class="carousel srpl-carousel">\n	<%= Y.srpl.App.templates.list_container() %>\n</div>\n<button class="image next overlay-button" style="display:none;">Next</button>\n<button class="image close overlay-button">Close</button>')
 };
 }, '@VERSION@',{

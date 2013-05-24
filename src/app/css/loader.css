@@ -2,7 +2,7 @@
     Loader
 ************************************************************************/
 
-#srpl-loader-container .loader {
+#srpl-loader-container .srpl-loader {
     border:                 1px solid #CCCCCC;
     left:                   48.2%;
     padding:                2px;
@@ -15,7 +15,7 @@
     -khtml-border-radius:   5px;
 }
 
-#srpl-loader-container .loader.big{
+#srpl-loader-container .srpl-loader.big{
     background:             #fff url("../img/spinner.gif") no-repeat center center;
     background-color:       #fff:
     background-color:       rgba(255, 255, 255, .95);

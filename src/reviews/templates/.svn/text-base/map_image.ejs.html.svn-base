@@ -1,0 +1,3 @@
+<% if( b.mapImage() ) {%>
+<img class="f-right map-image" <%= b.mapImage() %>/>
+<% } %>

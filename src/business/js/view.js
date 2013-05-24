@@ -12,14 +12,51 @@ YUI.add('srpl-business-view', function(Y){
 
     // Attributes and static properties for srpl-business View.
     BusinessView.ATTRS = {
-        container : null,
-        business : {},
-        map : null,
-        type : null
+        container : {
+            valueFn: function(){
+                return null;
+            }
+        },
+        business : {
+            valueFn: function(){
+                return null;
+            }
+        },
+        map : {
+            valueFn: function(){
+                return null;
+            }
+        },
+        foursquare: {
+            valueFn: function(){
+                return new Y.srpl.Foursquare.View();
+            }
+        },
+        yelp: {
+            valueFn: function(){
+                return new Y.srpl.Yelp.View();
+            }
+        },
+        reviews: {
+            valueFn: function(){
+                return new Y.srpl.Reviews.View();
+            },
+            on : {
+                'resize' : function(){
+                    this._resize();
+                }
+            }
+        },
+        type : {
+            valueFn: function(){
+                return new Y.srpl.Yelp.View();
+            }
+        }
     };
 
     Y.extend(BusinessView, Y.View, {
         eventListners : [],
+        pluginListners : [],
         // Specify delegated DOM events to attach to the srpl-business container.
         events:{
             'li .directions':{
@@ -32,12 +69,93 @@ YUI.add('srpl-business-view', function(Y){
         * @return {void}
         */
         initializer: function(config){
-            this.eventListeners = [];
-            if (this.type === 'full') {
+            var t = this;
+
+            t.eventListeners = [];
+            Y.each(BusinessView.ATTRS, function(spec, attrName){
+                Y.each(['on', 'once', 'after', 'onceAfter'], function(type){
+                    Y.each(spec[type], function(handler, evt){
+                        t.get(attrName)[type](evt, Y.bind(handler,t));
+                    });
+                });
+            });
+            if (t.type === 'full') {
                 Y.YMaps.init({
                     appid: Y.srpl.config('ymaps.appid')
                 });
             }
+        },
+        /**
+        * @method detachPluginListeners
+        * @return {void}
+        */
+        detachPluginListeners: function(){
+            if (this.pluginListners && this.pluginListners.length>0) {
+                Y.each(this.pluginListners, function(l,i){
+                    l.detach();
+                    l = null;
+                });
+                this.pluginListners = [];
+            }
+        },
+        /**
+        * @method detachPlugins
+        * @return {void}
+        */
+        detachPlugins: function(){
+            this.detachPluginListeners();
+            this.get('container').all('li.srpl-business').each(function(v,i){
+                v.destroy(true);
+            });
+        },
+        /**
+        * @method plugFoursquare
+        * @return {void}
+        */
+        plugFoursquare: function(node){
+            node.plug(Y.srpl.Plugin.Foursquare,{
+                container : node.one('.srpl-foursquare')
+            });
+            node.foursquare.render();
+        },
+        /**
+        * @method plugYelp
+        * @params {node object} node
+        * @return {void}
+        */
+        plugYelp: function(node){
+            node.plug(Y.srpl.Plugin.Yelp,{
+                container : node.one('.srpl-yelp-reviews')
+            });
+            node.yelp.render();
+        },
+        /**
+        * @method reviewsEvents
+        * @params {node object} node
+        * @return {void}
+        */
+        reviewsEvents: function(node){
+            var t = this,
+                reviewsListener;
+
+            reviewsListener = node.reviews.on({
+                'resize':function(e){
+                    t._resize();
+                }
+            });
+            this.pluginListners.push(reviewsListener);
+        },
+        /**
+        * @method plugReviews
+        * @params {node object} node
+        * @return {void}
+        */
+        plugReviews: function(node){
+            node.plug(Y.srpl.Plugin.Reviews,{
+                container : node.one('.srpl-yahoo-reviews')
+            });
+            node.reviews.render();
+            this.reviewsEvents(node);
         },
         /**
         * @method renderFull
@@ -78,6 +196,9 @@ YUI.add('srpl-business-view', function(Y){
                     });
                     t.get('map').draw(marker);
                 });
+                t.plugFoursquare(node);
+                t.plugYelp(node);
+                t.plugReviews(node);
                 node.setStyle('height',node.get('offsetHeight')+8);
             }
         },
@@ -93,6 +214,9 @@ YUI.add('srpl-business-view', function(Y){
                 node.setContent(Y.srpl.Business.templates.mini({
                     b : b
                 }));
+                t.plugFoursquare(node);
+                t.plugYelp(node);
+                t.plugReviews(node);
             }
         },
         /**
@@ -107,6 +231,7 @@ YUI.add('srpl-business-view', function(Y){
             var b = this.get('business'),
                 node = this.get('container').one('#srpl-'+b.get('id'));
 
+            this.get('container').addClass(this.get('type'));
             if (this.get('type') === 'full') {
                 this.renderFull(node,b);
             } else if (this.get('type') === 'mini') {
@@ -117,17 +242,34 @@ YUI.add('srpl-business-view', function(Y){
         * @method clear
         * @return {void}
         */
-        clear: function(){},
+        clear: function(){
+            this.detachPlugins();
+        },
+        /**
+        * @method resizeRequired
+        * @return {void}
+        */
+        resizeRequired : function(){
+            this.fire('resize');
+        },
         /**
         * @method destructor
         * @return {void}
         */
         destructor: function(){
+            this.detachPlugins();
             this.eventListeners = Y.srpl.util._destructor(this.eventListeners);
         },
 
         // -- Event Handlers -------------------------------------------------------
 
+        /**
+        * @method _resize
+        * @return {void}
+        */
+        _resize : function(){
+            this.fire('resize');
+        },
         /**
         * @method _directionsClick
         * @params {e} e
@@ -146,6 +288,9 @@ YUI.add('srpl-business-view', function(Y){
         'view',
         'srpl-business-model',
         'srpl-business-templates',
+        'srpl-foursquare-plugin',
+        'srpl-yelp-plugin',
+        'srpl-reviews-plugin',
         'srpl-util',
         'srpl-config',
         'srpl-map-view',

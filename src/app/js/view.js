@@ -24,7 +24,7 @@ YUI.add('srpl-app-view',function(Y){
         viewport : {
             valueFn: function(){
                 return {
-                    width : this.get('type') === 'mini' ? '600' : '900',
+                    width : this.get('type') === 'mini' ? (this.get('width') || this.get('container').get('offsetWidth') || '600') : '900',
                     height : Y.one('body').get('offsetHeight')
                 };
             }
@@ -57,6 +57,11 @@ YUI.add('srpl-app-view',function(Y){
                     container: Y.srpl.config('containers.business'),
                     type : this.get('type')
                 });
+            },
+            on : {
+                'resize' : function(){
+                    this.syncUI();
+                }
             }
         },
         /**
@@ -71,6 +76,7 @@ YUI.add('srpl-app-view',function(Y){
         carousel : {
             valueFn: null
         },
+        // USER CONTROLLED ATTRIBUTES
         /**
         * businessess
         */
@@ -88,7 +94,14 @@ YUI.add('srpl-app-view',function(Y){
         */
         type : {
             value : 'full'
-        }
+        },
+        /**
+        * width
+        */
+       width : {
+            value : 'null'
+       }
+       // END OF USER CONTROLLED ATTRIBUTES
     };
 
     AppView.NAME = 'appView';
@@ -159,18 +172,21 @@ YUI.add('srpl-app-view',function(Y){
         * @return {void}
         */
         syncUI: function(){
-            var activeBusinessHeight = this.get('businessView').get('container').one('.active').get('offsetHeight'),
-                height = Math.min(activeBusinessHeight,(Y.one('body').get('offsetHeight')-2*Y.srpl.config('overlay.offset')));
-            Y.log(height);
-            this.get('carousel')._uiSetHeight(height);
-            this.get('carousel')._uiSetHeightCB(height);
-            this.get('container').show();
-            this.get('businessView').get('container').setStyle('height',activeBusinessHeight);
-            this.get('overlay').setAttrs({
-                'height' : height,
-                'centered' : 'body'
-            });
-            this.get('overlay').show();
+            if (this.get('overlay') && this.get('businessView').get('container').one('.srpl-business.active')) {
+                Y.log('Srpl :: AppView : syncUI : called');
+                var activeBusinessHeight = this.get('businessView').get('container').one('.srpl-business.active').get('offsetHeight'),
+                    height = Math.min(activeBusinessHeight,(Y.one('body').get('offsetHeight')-2*Y.srpl.config('overlay.offset')));
+                Y.log('Srpl :: AppView : syncUI : height = '+height);
+                this.get('carousel')._uiSetHeight(height);
+                this.get('carousel')._uiSetHeightCB(height);
+                this.get('container').show();
+                this.get('businessView').get('container').setStyle('height',activeBusinessHeight);
+                this.get('overlay').setAttrs({
+                    'height' : height,
+                    'centered' : 'body'
+                });
+                this.get('overlay').show();
+            }
         },
         /**
         * @method overlayShow
@@ -313,6 +329,13 @@ YUI.add('srpl-app-view',function(Y){
             config = config || {};
             var t = this;
 
+            Y.each(AppView.ATTRS, function(spec, attrName){
+                Y.each(['on', 'once', 'after', 'onceAfter'], function(type){
+                    Y.each(spec[type], function(handler, evt){
+                        t.get(attrName)[type](evt, Y.bind(handler,t));
+                    });
+                });
+            });
             if (config.overlay === true) {
                 // append myc fader
                 if (!Y.one(Y.srpl.config('containers.fader'))) {

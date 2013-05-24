@@ -1,0 +1,30 @@
+.srpl-yahoo-reviews .srpl-reviews-tools {
+    border-bottom:      1px solid #C9C9C9;
+    border-top:         1px solid #C9C9C9;
+    padding:            8px 0;
+}
+
+.srpl-yahoo-reviews .srpl-reviews-tools li button{
+	color:              #5F5F5F;
+	font-weight:		0.9em;
+}
+
+.srpl-yahoo-reviews .srpl-reviews-tools li.active button{
+	font-weight:		bold;
+}
+
+.srpl-yahoo-reviews .srpl-reviews-tools .srpl-actions{
+    padding:            0;
+}
+
+.srpl-yahoo-reviews .srpl-reviews-container {
+    margin:             10px 0 0 0;
+}
+
+.srpl-yahoo-reviews .srpl-reviews-viewMore-container{
+    text-align:         center;
+    background-color:   #E2E2F7;
+}
+
+/* YUI CSS Detection Stamp */
+#yui3-css-stamp.srpl-reviews-css { display: none; }

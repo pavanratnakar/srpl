@@ -97,35 +97,33 @@ html[xmlns] .srpl .clearfix {
     Start of Actions
 ************************************************************************/
 
-.srpl ul.actions{
+.srpl ul.srpl-actions{
     padding:            0.769em 0 0 0;
 }
 
-.srpl .actions li.first-child,
-.srpl .actions li.first-child button{
+.srpl .srpl-actions li.first-child,
+.srpl .srpl-actions li.first-child button{
     padding-left:       0;
 }
 
-.srpl .actions li.last-child{
+.srpl .srpl-actions li.last-child{
     border:             none;
     padding-right:      0;
 }
 
-.srpl .actions li button{
+.srpl .srpl-actions li button{
     padding:            0;
     color:              #324FE1;
-    font-size:          11px;
-    line-height:        13px;
 }
 
-.srpl .actions li{
+.srpl .srpl-actions li{
     padding:            0 0.692em;
     display:            inline;
     float:              left;
 }
 
-.srpl .actions button:focus,
-.srpl .actions input[type="button"]:focus{
+.srpl .srpl-actions button:focus,
+.srpl .srpl-actions input[type="button"]:focus{
     outline:            none;
 }
 
@@ -281,17 +279,17 @@ html[xmlns] .srpl .clearfix {
     padding:            0;
 }
 
-.srpl-overlay .yui3-carousel-content .actions li {
+.srpl-overlay .yui3-carousel-content .srpl-actions li {
     position:           static;
     padding:            0 0.692em;
     margin:             0;
 }
 
-.srpl-overlay .yui3-carousel-content .actions li.first-child{
+.srpl-overlay .yui3-carousel-content .srpl-actions li.first-child{
     padding-left:       0;
 }
 
-.srpl-overlay .yui3-carousel-content .actions li.last-child{
+.srpl-overlay .yui3-carousel-content .srpl-actions li.last-child{
     border:             none;
     padding-right:      0;
 }
@@ -311,5 +309,6 @@ html[xmlns] .srpl .clearfix {
 /************************************************************************
     End of SRPL App Properties
 ************************************************************************/
+
 /* YUI CSS Detection Stamp */
 #yui3-css-stamp.srpl-app-css { display: none; }
