@@ -396,16 +396,17 @@ YUI.add('srpl-app-view',function(Y){
                     if (err) {
                         Y.log('Srpl :: AppView : Error');
                         Y.log(err);
+                        t.get('loader').hide();
+                        t.get('fader').hide();
                     } else {
                         Y.log(e.local.business);
                         t.get('businessView').setAttrs({
                             'business' : new Y.srpl.Business.Model(e.local.business)
                         });
-                    }
-
-                    t.get('businessView').render();
-                    if (t.get('overlay')) {
-                        t.overlayShow();
+                        t.get('businessView').render();
+                        if (t.get('overlay')) {
+                            t.overlayShow();
+                        }
                     }
                 });
             } else {

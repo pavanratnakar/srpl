@@ -196,9 +196,11 @@ YUI.add('srpl-business-view', function(Y){
                     });
                     t.get('map').draw(marker);
                 });
-                t.plugFoursquare(node);
-                t.plugYelp(node);
-                t.plugReviews(node);
+                if (b.get('id') !== '11138504') {
+                    t.plugFoursquare(node);
+                    t.plugYelp(node);
+                    t.plugReviews(node);
+                }
                 node.setStyle('height',node.get('offsetHeight')+8);
             }
         },

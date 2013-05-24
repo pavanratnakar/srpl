@@ -72,6 +72,7 @@ YUI.add('srpl-search-model', function(Y){
                     id: options
                 };
             }
+
             Y.srpl.jsonp((options.url || Y.srpl.config('search.server')) + '?' + Y.QueryString.stringify(t.queryOptions(options)),{
                 on:{
                     success: function(data){
