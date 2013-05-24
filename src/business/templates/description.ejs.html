@@ -1,5 +1,5 @@
-<% if (b.get('slogan') && !Y.Lang.isObject(b.get('slogan'))) { %>
+<% if (b.get('overview').long_desc && !Y.Lang.isObject(b.get('overview').long_desc)) { %>
 <div class="srpl-container">
-    <h6><%= b.get('slogan') %></h6>
+    <h6><%= b.get('overview').long_desc %></h6>
 </div>
 <% }%>

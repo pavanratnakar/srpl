@@ -115,11 +115,10 @@ YUI.add('srpl-app-view',function(Y){
         */
         overlayInitilize : function(){
             this.set('overlay',new Y.Overlay({
-                zIndex: 500,
+                zIndex: Y.srpl.config('overlay.zIndex'),
                 centered : true,
                 bodyContent: this.template(),
-                width :900,
-                height: 292
+                width :Y.srpl.config('overlay.width')
             }));
             this.get('overlay').get('boundingBox').addClass("srpl-overlay");
             this.get('overlay')
@@ -145,13 +144,33 @@ YUI.add('srpl-app-view',function(Y){
         overlayRender: function(e){
             var t = this,
                 selectedItem = Y.Array.indexOf(t.get('businessess'),t.get('active'));
+
             t.get('loader').render();
             Y.srpl.util.showFader();
-            t.show();
             t.get('carousel').set('selectedItem',selectedItem);
             t.get('carousel').render();
             t.get('carousel').scrollTo(selectedItem);
+            t.show();
             t.carouselNavigationControls(selectedItem);
+
+        },
+        /**
+        * @method overlayLayout
+        * @return {void}
+        */
+        syncUI: function(){
+            var activeBusinessHeight = this.get('businessView').get('container').one('.active').get('offsetHeight'),
+                height = Math.min(activeBusinessHeight,(Y.one('body').get('offsetHeight')-2*Y.srpl.config('overlay.offset')));
+            Y.log(height);
+            this.get('carousel')._uiSetHeight(height);
+            this.get('carousel')._uiSetHeightCB(height);
+            this.get('container').show();
+            this.get('businessView').get('container').setStyle('height',activeBusinessHeight);
+            this.get('overlay').setAttrs({
+                'height' : height,
+                'centered' : 'body'
+            });
+            this.get('overlay').show();
         },
         /**
         * @method overlayShow
@@ -159,11 +178,7 @@ YUI.add('srpl-app-view',function(Y){
         */
         overlayShow: function(){
             if (this.get('overlay')) {
-                this.get('overlay').setAttrs({
-                    //'height' : this.get('overlay').get('boundingBox').get('offsetHeight'),
-                    'centered' : 'body'
-                });
-                this.get('overlay').show();
+                this.syncUI();
             }
             this.get('loader').hide();
         },
@@ -335,6 +350,9 @@ YUI.add('srpl-app-view',function(Y){
             if (this.get('overlay')) {
                 this.get('overlay').set("centered", "body");
             }
+            Y.srpl.util.resizeFader()
+            this.get('loader').resize();
+            this.syncUI();
         },
         /**
         * @method show
@@ -344,6 +362,10 @@ YUI.add('srpl-app-view',function(Y){
             var t = this,
                 activeNode = t.get('container').one('#srpl-'+t.get('active'));
 
+            activeNode
+                .addClass('active')
+                .siblings()
+                    .removeClass('active');
             if (activeNode && !activeNode.getContent()) {
                 t.get('searchModel').query({
                     'id': t.get('active')
@@ -357,29 +379,19 @@ YUI.add('srpl-app-view',function(Y){
                             'business' : new Y.srpl.Business.Model(e.local.business)
                         });
                     }
-                    if (!t.get('overlay')) {
-                        activeNode
-                            .show()
-                            .siblings()
-                                .hide();
-                    }
+
                     t.get('businessView').render();
                     if (t.get('overlay')) {
                         t.overlayShow();
                     }
                 });
             } else {
+                t.get('businessView').render();
                 if (t.get('overlay')) {
                     t.overlayShow();
-                } else {
-                    activeNode
-                        .show()
-                        .siblings()
-                            .hide();
                 }
             }
         },
-
         /**
         * @method render
         * @return {void}
@@ -444,6 +456,7 @@ YUI.add('srpl-app-view',function(Y){
         'node',
         'view',
         'overlay',
+        'cssgrids',
         'gallery-carousel',
         'gallery-carousel-anim',
         'substitute',

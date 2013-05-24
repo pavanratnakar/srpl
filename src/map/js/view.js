@@ -59,13 +59,6 @@ YUI.add('srpl-map-view', function(Y){
             }
         },
         /**
-        * @method markers
-        * @return {object}
-        */
-        addMarker : function(type,properties){
-            this.markers.add(type,properties);
-        },
-        /**
         * rem objects map
         * @method remove
         * @return {void}
@@ -82,9 +75,7 @@ YUI.add('srpl-map-view', function(Y){
         * @method clear
         * @return {object}
         */
-        clear : function(){
-            this.markers.clear();
-        }
+        clear : function(){}
     });
 
     Y.namespace('srpl');

@@ -60,9 +60,10 @@ YUI.add('srpl-app-loader-view',function(Y){
         * @return {void}
         */
         resize : function(e){
+            e = e || {};
             this.get('container').setStyles({
-                height : e.height,
-                width :  e.width
+                height : e.height || Y.one('body').get('offsetHeight'),
+                width :  e.width || Y.one('body').get('offsetWidth')
             });
         }
     });

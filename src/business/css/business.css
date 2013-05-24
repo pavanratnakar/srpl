@@ -1,3 +1,11 @@
+.srpl-business {
+    display:        none;
+}
+
+..srpl-business {
+    display:        block;
+}
+
 .srpl-business h1{
     font-size:      2em;
     line-height:    1.6em;
@@ -23,9 +31,26 @@
 
 .srpl-business .srpl-body .srpl-container{
     margin:        10px 0;
-    display:       inline-block;
-    padding:	   0 5px;
+    display:       block;
+    padding:	   0 15px;
 }
+
+/************************************************************************
+    SRPL Business detail Container
+************************************************************************/
+
+.srpl-detail-container .srpl-content-container {
+    border-bottom:          1px solid #C9C9C9;
+    padding:                6px 0;
+}
+
+.srpl-detail-container .actions {
+    padding:                6px 0 6px 0;
+}
+
+/************************************************************************
+    SRPL Business detail Container
+************************************************************************/
 
 /* YUI CSS Detection Stamp */
 #yui3-css-stamp.srpl-business-css { display: none; }

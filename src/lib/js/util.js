@@ -169,10 +169,11 @@ YUI.add('srpl-util',function(Y){
         * @method resizeFader
         * @return {void}
         */
-        resizeFader : function(){
+        resizeFader : function(e){
+            e = e || {};
             Y.one('#srpl-fader-container').setStyles({
-                height : Y.one('body').get('offsetHeight'),
-                width :  Y.one('body').get('offsetWidth')
+                height : e.height || Y.one('body').get('offsetHeight'),
+                width :  e.width || Y.one('body').get('offsetWidth')
             });
         },
         /**

@@ -55,7 +55,7 @@ YUI.add('srpl-business-view', function(Y){
                 node.one('img.hero').setStyle('height',headerHeight);
                 t.set('map',new Y.srpl.Map({
                     'height' : headerHeight,
-                    'width' : t.get('container').one('.srpl-header').get('offsetWidth') - t.get('container').one('.srpl-hero-container').get('offsetWidth') - 1,
+                    //'width' : t.get('container').one('.srpl-header').get('offsetWidth') - t.get('container').one('.srpl-hero-container').get('offsetWidth') - 1,
                     'traffic' : false,
                     'boundingBox' : node.one('.srpl-map'),
                     'center' : b.geo(),
@@ -73,11 +73,12 @@ YUI.add('srpl-business-view', function(Y){
                     var marker = new Y.YMaps.Marker({
                         geoLocation: b.geo(),
                         label: '*',
-                        detailViewContent: '',
-                        hoverOverMarkerContent: ''
+                        detailViewContent: ' ',
+                        hoverOverMarkerContent: ' '
                     });
                     t.get('map').draw(marker);
                 });
+                node.setStyle('height',node.get('offsetHeight')+8);
             }
         },
         /**

@@ -22,13 +22,18 @@ YUI.add('srpl-config', function(Y){
             pan : false,
             zoom : true,
             scale : false,
-            keyboard : true,
-            mouse : true,
+            keyboard : false,
+            mouse : false,
             mapTypeControl : false,
             zoomControl : true,
             traffic : false,
             zoomThresholdLevel : 16,
             animatedTransitions : true // default true. Override it if required
+        },
+        overlay : {
+            zIndex : 500,
+            width : 900,
+            offset : 15
         },
         carousel : {
             numVisible : 1,
@@ -67,7 +72,9 @@ YUI.add('srpl-config', function(Y){
             //server: 'http://maps.yahoo.com/myc-local'
         },
         business:{
-            galleryCount : 4
+            galleryCount : 4,
+            searchServer : 'http://search.yahoo.com/local/s',
+            localServer : 'http://local.yahoo.com'
         },
         tracking:{
             enable: false,

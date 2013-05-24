@@ -5,7 +5,7 @@
 YUI.add('srpl-search-model', function(Y){
     var defaults = {
         params:{
-            'id':          null,   // onebox query - Location / Business category or POI followed by location
+            'id':          null   // onebox query - Location / Business category or POI followed by location
         }
     };
 

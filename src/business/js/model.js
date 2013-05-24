@@ -74,7 +74,8 @@ YUI.add('srpl-business-model', function(Y){
         "websitelabel" : null,
         "zip" : null,
         "ycatsprimary" : null,
-        "latestreview" : null
+        "latestreview" : null,
+        "categories" : null
     };
 
     Business.NAME = 'business';
@@ -188,7 +189,7 @@ YUI.add('srpl-business-model', function(Y){
         * @method getPrimaryCategory
         * @return {string}
         */
-        getThumbnailGalleryPhotos : function(){         
+        getThumbnailGalleryPhotos : function(){
             var photos = [];
             if (this.get('full_size_photos') && this.get('full_size_photos').count > 0) {
                 if (Y.Lang.isArray(this.get('full_size_photos').photo)) {
@@ -200,6 +201,37 @@ YUI.add('srpl-business-model', function(Y){
                 }
             }
             return photos;
+        },
+        /**
+        * @method getBusinessUrl
+        * @return {string}
+        */
+        getBusinessUrl : function(){
+            return Y.srpl.config('business.localServer')+'/info-'+this.get('id');
+        },
+        /**
+        * @method getCateoryUrl
+        * @return {string}
+        */
+        getCateoryUrl : function(category){
+            return Y.srpl.config('business.searchServer')+'?p='+category.name+'&addr='+encodeURIComponent(this.address())+'&limcat='+category.ycat+'';
+        },
+        /**
+        * @method getCategories
+        * @return {array}
+        */
+        getCategories : function(){
+            var categories = [];
+            if (Y.Lang.isArray(this.get('ycats').data)) {
+                Y.each(this.get('ycats').data,function(c,i){
+                    if (c) {
+                        categories.push(c);
+                    }
+                });
+            } else if (this.get('ycats').data) {
+                categories.push(this.get('ycats').data);
+            }
+            return categories;
         }
     },{
         /**

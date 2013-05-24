@@ -2,11 +2,11 @@
     var photos = b.getThumbnailGalleryPhotos();
     if (photos.length > 0) { %>
     <div class="srpl-container">
-        <ul class="srpl-gallery">
+        <ul class="srpl-gallery clearfix">
         <%
         photos = photos.slice(0,Y.srpl.config('business.galleryCount'));
         Y.each(photos, function(p,i){ %>
-            <li>
+            <li class="<%=(i===0) ? 'first-child' : ''%> <%=(i===(photos.length-1)) ? 'last-child' : ''%> srpl-gallery-thumbnails">
                 <img src="<%= p %>" alt="<%= b.displayValue() %>"/>
             </li>
         <%}); %>

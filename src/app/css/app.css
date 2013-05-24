@@ -6,7 +6,6 @@
     font:               13px/1.231 "Helvetica Neue",Helvetica,Arial,sans-serif;
     color:              #5F5F5F;
     background-color:   #F5F7F9;
-    height:             100%;
     margin:             0;
     padding:            0;
 }
@@ -270,8 +269,16 @@ html[xmlns] .srpl .clearfix {
     SRPL Carousel Properties
 ************************************************************************/
 
+.srpl-carousel {
+    overflow-y:         auto;
+    overflow-x:         hidden;
+}
+
 .srpl-overlay .yui3-carousel-content li.yui3-carousel-item { 
     text-align:         left;
+    overflow-y:         auto;
+    margin:             0;
+    padding:            0;
 }
 
 .srpl-overlay .yui3-carousel-content .actions li {
