@@ -1,0 +1,40 @@
+.srpl-business .srpl-map{
+/*    border-left:        1px solid #FFF;*/
+}
+
+.srpl .srpl-hero-container{
+    position:           relative;
+}
+
+.srpl .srpl-hero-container .srcpl-hero-content-container{
+    position:           absolute;
+    top:                50px;
+    left:               16px;
+}
+
+.srpl .srpl-hero-container .srpl-actions li button {
+    padding:            10px 15px 10px 15px;
+    font-size:          1.1em;
+    font-weight:        normal;
+}
+
+.srpl .srpl-hero-container p{
+    line-height:        1.4em;
+    font-size:          1.1em;
+}
+
+.srpl .srpl-hero-container .srpl-rating-review {
+    padding:            15px 0;
+    line-height:        1em;
+}
+
+.srpl .srpl-hero-container a{
+    color:              inherit;
+}
+
+.srpl .srpl-hero-container ul.srpl-actions{
+    margin-top:         10px;
+}
+
+/* YUI CSS Detection Stamp */
+#yui3-css-stamp.srpl-hero-css { display: none; }

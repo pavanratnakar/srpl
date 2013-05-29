@@ -1,8 +1,0 @@
-<h3>
-    <span class="bold"><%= sanitize(business) %></span>
-    <% if (locationName) { %> 
-    near <span class="bold"><%= locationName %></span>
-    <% } %>
-</span>
-</h3>
-<h5 class="count"><%= total %> results</h5>

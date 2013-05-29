@@ -1,80 +1,0 @@
-10
-
-dir
-5385
-svn+ssh://svn.corp.yahoo.com/yahoo/properties/maps/trunk/myc/src/search
-svn+ssh://svn.corp.yahoo.com/yahoo/properties/maps
-
-
-
-2013-05-08T18:09:21.939786Z
-5323
-pavanr
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-5ace87e4-2595-11e0-bfdf-bd4db8321f9f
-
-tests
-dir
-
-samples
-dir
-
-css
-dir
-
-img
-dir
-
-js
-dir
-
-README.md
-file
-
-
-
-
-2013-03-04T15:41:23.000000Z
-5372f6134f4031add0d2d2e869f8c43b
-2012-05-03T04:50:24.116939Z
-2334
-sunilpai
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-16
-
-templates
-dir
-

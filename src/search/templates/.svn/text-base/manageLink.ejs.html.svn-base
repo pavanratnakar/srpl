@@ -1,5 +1,0 @@
-<div class="manage">
-    <a href="<%= manageLink %>" target="_blank">
-        <span class="manage-icon"></span><span class="linkText">Manage Locations</span>
-    </a>
-</div>

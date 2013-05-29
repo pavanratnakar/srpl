@@ -372,11 +372,10 @@ YUI.add('srpl-app-view',function(Y){
                 var businessView = new Y.srpl.Business.View({
                     container: '#srpl-'+t.get('active'),
                     model: this.get('businessModelList').getById(t.get('active')),
-                    hero: new Y.srpl.BusinessHero.Model(window.response.hero),
-                    review: new Y.srpl.BusinessReview.Model(window.response.review)
+                    hero: new Y.srpl.Hero.Model(window.response.hero),
+                    review: new Y.srpl.Review.Model(window.response.review)
                 });
                 businessView.on('resize',function(){
-                    Y.log('BUSINESS VIEW RESIZE');
                     t.syncUI();
                 });
                 businessView.render();
@@ -475,8 +474,8 @@ YUI.add('srpl-app-view',function(Y){
         'srpl-search-model',
         'srpl-instrumentation-plugin',
         'srpl-util',
-        'srpl-business-hero-model',
-        'srpl-business-review-model',
+        'srpl-hero-model',
+        'srpl-review-model',
         'srpl-business-model-list'
     ]
 });

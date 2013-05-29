@@ -18,8 +18,8 @@ YUI.add('srpl-business-view', function(Y){
             }
         },
         model : Y.srpl.Business.Model,
-        hero : Y.srpl.BusinessHero.Model,
-        review : Y.srpl.BusinessReview.Model,
+        hero : Y.srpl.Hero.Model,
+        review : Y.srpl.Review.Model,
         map : {
             valueFn: function(){
                 return null;
@@ -227,9 +227,10 @@ YUI.add('srpl-business-view', function(Y){
     requires:[
         'view',
         'srpl-business-model',
-        'srpl-business-hero-model',
-        'srpl-business-review-model',
+        'srpl-hero-model',
+        'srpl-review-model',
         'srpl-business-templates',
+        'srpl-hero-templates',
         'srpl-foursquare-view',
         'srpl-yelp-view',
         'srpl-reviews-view',
@@ -238,7 +239,7 @@ YUI.add('srpl-business-view', function(Y){
         'srpl-map-view',
         'srpl-business-css',
         'srpl-lib-css',
-        'srpl-business-hero-css',
+        'srpl-hero-css',
         'srpl-business-gallery-css',
         'srpl-config'
     ]

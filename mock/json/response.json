@@ -34,7 +34,7 @@ response = {
             "url": "http://www.garydanki.com",
             "label": "www.garydanki.com"
         },
-        "description": "The recipient of the conveted James Beard cooking award, Chef Gary Danko practices his genius at his eponymour, 75-seat Gary Danki restaurant. Reservations usually have to be booked two months in advance. Luxurious appretixers, flvorful entreers, and deserts",
+        "description": "The recipient of the conveted James Beard cooking award, Chef Gary Danko practices his genius at his eponymour, 75-seat Gary Danki restaurant. Reservations usually have to be booked two months in advance. Luxurious appretixers, flvorful entreers, and deserts blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah",
         "thumbnail": {
             "thumbnails" : {
                 0: {
@@ -57,16 +57,29 @@ response = {
             "add_photo_link": null
         },
         "hours": {
-            'status': null,
+            'status': 'Open',
+            'today' : true,
             'days': {
                 0: {
-                    'desc' : null
+                    'desc' : '11:00 AM - 3:00 PM'
                 },
                 1: {
-                    'desc' : null
+                    'desc' : '11:00 AM - 3:00 PM'
                 },
                 2: {
-                    'desc' : null
+                    'desc' : '11:00 AM - 3:00 PM'
+                },
+                3: {
+                    'desc' : '11:00 AM - 3:00 PM'
+                },
+                4: {
+                    'desc' : '11:00 AM - 3:00 PM'
+                },
+                5: {
+                    'desc' : '11:00 AM - 3:00 PM'
+                },
+                6: {
+                    'desc' : '11:00 AM - 3:00 PM'
                 }
             }
         },
@@ -82,5 +95,45 @@ response = {
         'averageRating' : 4.5,
         'reviewUrl' : 'http://test.com',
         'source' : 'yahoo' 
+    },
+    'hero' : {
+        'image' : {
+            'src' : 'http://www.beaurivage.com/images/restaurants/restaurants_fine_jia.jpg',
+            'height' : '280',
+            'width' : '730'
+        },
+        'palette' : {
+            'button' : '#889A2D',
+            'text' : '#FFFFFF'
+        }
+    },
+    'foursquare' : {
+
+    },
+    'yelp' : {
+        'reviews' : {
+
+        }
+    },
+    'yahoo_reviews' : {
+
+    },
+    'twitter' : {
+
+    },
+    'facebook' : {
+
+    },
+    'gallery' : {
+
+    },
+    'menu' : {
+
+    },
+    'you_might_like' : {
+
+    },
+    'templates' : {
+
     }
 };
