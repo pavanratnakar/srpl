@@ -1,64 +1,61 @@
-<% if (b.get('overview')) { %>
 <div class="srpl-container srpl-detail-container">
-    <% if (!Y.Lang.isObject(b.get('overview').hrs)) { %>
     <div class="srpl-container-body">
+        <% if (b.get('hours')) { %>
         <div class="yui3-g srpl-container-sub">
             <div class="yui3-u-1-4">Hours</div>
-            <div class="yui3-u-3-4">
+            <div class="yui3-u-3-4 srpl-day-hours-container">
                 <%
-                Y.each(b.get('overview').hrs.split(','),function(h,i){
+                Y.each(b.get('hours').days,function(d,i){
                 %>
-                <p><%=h%><p>
+                <p class="srpl-day-hours"><%= d.desc %></p>
                 <%
                 });
                 %>
             </div>
         </div>
-        <% } 
-        var categories = b.getCategories();
-        if (categories.length > 0) { %>
+        <% } if (b.get('categories')) { %>
         <div class="yui3-g srpl-container-sub">
             <div class="yui3-u-1-4">Category</div>
             <div class="yui3-u-3-4">
             <%
-                Y.each(categories,function(c,i){%>
-                <a target="<%= Y.srpl.config('linking.target') %>" href="<%= b.getCateoryUrl(c) %>" title="<%= c.name %>"><%= c.name %></a><%= (i === categories.length-1 || i === 0) ? '' : ', ' %>
+                Y.each(b.get('categories'),function(c,i){%>
+                <a target="<%= Y.srpl.config('linking.target') %>" href="<%= c.url %>" title="<%= c.name %>"><%= c.name %></a><%= (i === b.get('categories').length-1 || i === 0) ? '' : ', ' %>
             <%});%>
             </div>
         </div>
-        <% } if (!Y.Lang.isObject(b.get('overview').payment)) { %>
+        <% } if (b.get('payment')) { %>
         <div class="yui3-g srpl-container-sub">
             <div class="yui3-u-1-4">Payment</div>
-            <div class="yui3-u-3-4"><%= b.get('overview').payment %></div>
+            <div class="yui3-u-3-4"><%= b.get('payment') %></div>
         </div>
-        <% } if (!Y.Lang.isObject(b.get('overview').cuisine)) { %>
+        <% } if (b.get('cuisine')) { %>
         <div class="yui3-g srpl-container-sub">
             <div class="yui3-u-1-4">Cuisine</div>
-            <div class="yui3-u-3-4"><%= b.get('overview').cuisine %></div>
+            <div class="yui3-u-3-4"><%= b.get('cuisine') %></div>
         </div>
-        <% } if (!Y.Lang.isObject(b.get('overview').ambiance)) { %>
+        <% } if (b.get('ambiance')) { %>
         <div class="yui3-g srpl-container-sub">
             <div class="yui3-u-1-4">Ambiance</div>
-            <div class="yui3-u-3-4"><%= b.get('overview').ambiance %></div>
+            <div class="yui3-u-3-4"><%= b.get('ambiance') %></div>
         </div>
-        <% } if (!Y.Lang.isObject(b.get('overview').feature)) { %>
+        <% } if (b.get('feature')) { %>
         <div class="yui3-g srpl-container-sub">
             <div class="yui3-u-1-4">Feature</div>
-            <div class="yui3-u-3-4"><%= b.get('overview').feature %></div>
+            <div class="yui3-u-3-4"><%= b.get('feature') %></div>
         </div>
-        <% } if (!Y.Lang.isObject(b.get('overview').dress_code)) { %>
+        <% } if (b.get('attire')) { %>
         <div class="yui3-g srpl-container-sub">
             <div class="yui3-u-1-4">Attire</div>
-            <div class="yui3-u-3-4"><%= b.get('overview').dress_code %></div>
+            <div class="yui3-u-3-4"><%= b.get('attire') %></div>
         </div>
-        <% } if (!Y.Lang.isObject(b.get('overview').price)) { %>
+        <% } if (b.get('price')) { %>
         <div class="yui3-g srpl-container-sub">
             <div class="yui3-u-1-4">Price</div>
-            <div class="yui3-u-3-4"><%= b.get('overview').price %></div>
+            <div class="yui3-u-3-4"><%= b.get('price') %></div>
         </div>
         <% } %>
         <ul class="srpl-actions clearfix">
-            <li class="first-child">
+            <li class="first-child srpl-more-details" style="display:none">
                 <a href="<%= b.getBusinessUrl() %>" class="f-left" title="View More Details">View More Details</a>
             </li>
             <li class="last-child f-right">
@@ -67,4 +64,3 @@
         </ul>
     </div>
 </div>
-<% } %>

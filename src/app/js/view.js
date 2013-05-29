@@ -49,22 +49,6 @@ YUI.add('srpl-app-view',function(Y){
             }
         },
         /**
-        * events specific to business view
-        */
-        businessView: {
-            valueFn: function(){
-                return new Y.srpl.Business.View({
-                    container: Y.srpl.config('containers.business'),
-                    type : this.get('type')
-                });
-            },
-            on : {
-                'resize' : function(){
-                    this.syncUI();
-                }
-            }
-        },
-        /**
         * overlay
         */
         overlay : {
@@ -75,6 +59,14 @@ YUI.add('srpl-app-view',function(Y){
         */
         carousel : {
             valueFn: null
+        },
+        /**
+        * business-model-list
+        */
+        businessModelList : {
+            valueFn: function(){
+                return new Y.srpl.Business.Model.List();
+            }
         },
         // USER CONTROLLED ATTRIBUTES
         /**
@@ -88,12 +80,6 @@ YUI.add('srpl-app-view',function(Y){
         */
         active : {
             valueFn: null
-        },
-        /**
-        * active
-        */
-        type : {
-            value : 'full'
         },
         /**
         * width
@@ -172,15 +158,17 @@ YUI.add('srpl-app-view',function(Y){
         * @return {void}
         */
         syncUI: function(){
-            if (this.get('overlay') && this.get('businessView').get('container').one('.srpl-business.active')) {
+            var activeBusinessContainer = this.get('container').one('#srpl-'+this.get('active'));
+
+            if (this.get('overlay') && activeBusinessContainer.hasClass('active')) {
                 Y.log('Srpl :: AppView : syncUI : called');
-                var activeBusinessHeight = this.get('businessView').get('container').one('.srpl-business.active').get('offsetHeight'),
+                var activeBusinessHeight = activeBusinessContainer.get('offsetHeight'),
                     height = Math.min(activeBusinessHeight,(Y.one('body').get('offsetHeight')-2*Y.srpl.config('overlay.offset')));
                 Y.log('Srpl :: AppView : syncUI : height = '+height);
                 this.get('carousel')._uiSetHeight(height);
                 this.get('carousel')._uiSetHeightCB(height);
                 this.get('container').show();
-                this.get('businessView').get('container').setStyle('height',activeBusinessHeight);
+                this.get('container').one(Y.srpl.config('containers.business')).setStyle('height',activeBusinessHeight);
                 this.get('overlay').setAttrs({
                     'height' : height,
                     'centered' : 'body'
@@ -336,33 +324,22 @@ YUI.add('srpl-app-view',function(Y){
                     });
                 });
             });
-            if (config.overlay === true) {
-                // append myc fader
-                if (!Y.one(Y.srpl.config('containers.fader'))) {
-                    Y.one('body').appendChild(Y.srpl.App.templates.fader());
-                }
-                t.overlayInitilize();
-                t.set('container',t.get('overlay').get('boundingBox'));
-                t.get('container')
-                    .one(Y.srpl.config('containers.main'))
-                    .setContent(Y.srpl.App.templates.overlay())
-                    .setStyles({
-                        'width' : this.get('viewport').width
-                    });
-                Y.each(t.get('businessess'),function(b,i){
-                    t.get('container').one('#srpl-container').append(Y.srpl.App.templates.list({'b':b,'width':t.get('viewport').width}));
-                });
-                t.carouselInitilize();
-            } else {
-                t.get('container')
-                    .setContent(t.template())
-                    .hide();
-                t.get('container').one(Y.srpl.config('containers.main'))
-                    .setContent(Y.srpl.App.templates.list_container())
-                    .setStyles({
-                        'width' : this.get('viewport').width
-                    });
+            // append myc fader
+            if (!Y.one(Y.srpl.config('containers.fader'))) {
+                Y.one('body').appendChild(Y.srpl.App.templates.fader());
             }
+            t.overlayInitilize();
+            t.set('container',t.get('overlay').get('boundingBox'));
+            t.get('container')
+                .one(Y.srpl.config('containers.main'))
+                .setContent(Y.srpl.App.templates.overlay())
+                .setStyles({
+                    'width' : this.get('viewport').width
+                });
+            Y.each(t.get('businessess'),function(b,i){
+                t.get('container').one(Y.srpl.config('containers.business')).append(Y.srpl.App.templates.list({'b':b,'width':t.get('viewport').width}));
+            });
+            t.carouselInitilize();
             t.initEvents();
         },
         /**
@@ -373,7 +350,7 @@ YUI.add('srpl-app-view',function(Y){
             if (this.get('overlay')) {
                 this.get('overlay').set("centered", "body");
             }
-            Y.srpl.util.resizeFader()
+            Y.srpl.util.resizeFader();
             this.get('loader').resize();
             this.syncUI();
         },
@@ -390,27 +367,41 @@ YUI.add('srpl-app-view',function(Y){
                 .siblings()
                     .removeClass('active');
             if (activeNode && !activeNode.getContent()) {
-                t.get('searchModel').query({
-                    'id': t.get('active')
-                },function(err,e){
-                    if (err) {
-                        Y.log('Srpl :: AppView : Error');
-                        Y.log(err);
-                        t.get('loader').hide();
-                        t.get('fader').hide();
-                    } else {
-                        Y.log(e.local.business);
-                        t.get('businessView').setAttrs({
-                            'business' : new Y.srpl.Business.Model(e.local.business)
-                        });
-                        t.get('businessView').render();
-                        if (t.get('overlay')) {
-                            t.overlayShow();
-                        }
-                    }
+                window.response.business.id = t.get('active');
+                this.get('businessModelList').add(window.response.business);
+                var businessView = new Y.srpl.Business.View({
+                    container: '#srpl-'+t.get('active'),
+                    model: this.get('businessModelList').getById(t.get('active')),
+                    hero: new Y.srpl.BusinessHero.Model(window.response.hero),
+                    review: new Y.srpl.BusinessReview.Model(window.response.review)
                 });
+                businessView.on('resize',function(){
+                    Y.log('BUSINESS VIEW RESIZE');
+                    t.syncUI();
+                });
+                businessView.render();
+                t.overlayShow();
+                //             'business' : new Y.srpl.Business.Model(e.local.business)
+                //         });
+                // t.get('searchModel').query({
+                //     'id': t.get('active')
+                // },function(err,e){
+                //     if (err) {
+                //         Y.log('Srpl :: AppView : Error');
+                //         Y.log(err);
+                //         t.get('loader').hide();
+                //         t.get('fader').hide();
+                //     } else {
+                //         Y.log(e.local.business);
+                //         t.get('businessView').set('business',new Y.srpl.Business.Model(e.local.business));
+                //         t.get('businessView').render();
+                //         if (t.get('overlay')) {
+                //             t.overlayShow();
+                //         }
+                //     }
+                // });
             } else {
-                t.get('businessView').render();
+                this.get('businessModelList').getById(t.get('active')).set('state',true);
                 if (t.get('overlay')) {
                     t.overlayShow();
                 }
@@ -421,15 +412,7 @@ YUI.add('srpl-app-view',function(Y){
         * @return {void}
         */
         render: function(e){
-            if (this.get('overlay')) {
-                this.overlayRender();
-            } else {
-                this.get('container').show();
-                if (!this.get('container').one('#srpl-'+this.get('active'))) {
-                    this.get('container').one('#srpl-container').append(Y.srpl.App.templates.list({'b':this.get('active'),'width':this.get('viewport').width}));
-                }
-                this.show();
-            }
+            this.overlayRender();
         },
         /**
         * @method destructor
@@ -488,10 +471,12 @@ YUI.add('srpl-app-view',function(Y){
         'srpl-app-button-css',
         'srpl-app-loader-view',
         'srpl-app-templates',
-        'srpl-business-model',
         'srpl-business-view',
         'srpl-search-model',
         'srpl-instrumentation-plugin',
-        'srpl-util'
+        'srpl-util',
+        'srpl-business-hero-model',
+        'srpl-business-review-model',
+        'srpl-business-model-list'
     ]
 });

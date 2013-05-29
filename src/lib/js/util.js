@@ -223,6 +223,37 @@ YUI.add('srpl-util',function(Y){
             return Y.Escape.html(str);
         },
         /**
+        * @method truncator
+        * @return {string}
+        */
+        stringTruncator : function(str,limit){
+            if (str.length < limit ) return str;
+            return str.slice(0,limit )+'<span> ...</span><a href="javascript:void(0);" class="srpl-more">more</a>'+
+                '<span style="display:none;">'+ str.slice(limit ,str.length)+'<span> ...</span><a href="javascript:void(0);" class="srpl-less">less</a></span>';
+        },
+        /**
+        * TODO : Needs translation
+        * @method truncator
+        * @return {string}
+        */
+        domTruncator : function(container,el,limit,type){
+            type = type || 'hide';
+            if (container.all(el).size() > limit) {
+                if (type === 'hide') {
+                    container.one('.srpl-more-details')
+                        .one('a')
+                            .setContent('View More Details');
+                } else {
+                    container.one('.srpl-more-details')
+                        .one('a')
+                            .setContent('View Less Details');
+                }
+                container.one('.srpl-more-details').show();
+                container.all(el).slice(limit).toggleClass('hide');
+                container.one('.srpl-more-details').toggleClass('srpl-view-more');
+            }
+        },
+        /**
         * @method _destructor
         * @return {array}
         */

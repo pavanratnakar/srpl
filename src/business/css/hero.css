@@ -4,7 +4,6 @@
 
 .srpl .srpl-hero-container{
     position:           relative;
-    color:              #FFF;
 }
 
 .srpl .srpl-hero-container .srcpl-hero-content-container{
@@ -14,8 +13,6 @@
 }
 
 .srpl .srpl-hero-container .srpl-actions li button {
-    background-color:   #889A2D;
-    color:              #FFF;
     padding:            10px 15px 10px 15px;
     font-size:          1.1em;
     font-weight:        normal;
@@ -31,8 +28,8 @@
     line-height:        1em;
 }
 
-.srpl .srpl-hero-container .srpl-rating-review a{
-    color:              #FFF;
+.srpl .srpl-hero-container a{
+    color:              inherit;
 }
 
 .srpl .srpl-hero-container ul.srpl-actions{

@@ -74,7 +74,10 @@ YUI.add('srpl-config', function(Y){
         business:{
             galleryCount : 4,
             searchServer : 'http://search.yahoo.com/local/s',
-            localServer : 'http://local.yahoo.com'
+            localServer : 'http://local.yahoo.com',
+            descriptionLimit : 200,
+            detailLimit : 2,
+            hourLimit : 2
         },
         tracking:{
             enable: false,

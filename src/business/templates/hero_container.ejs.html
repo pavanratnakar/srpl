@@ -1,30 +1,28 @@
-<div class="srcpl-hero-container">
-    <img class="hero" src="<%= b.get('herophoto') %>" alt="<%= b.displayValue() %>"/>
+<div class="srcpl-hero-container" style="color:<%= h.get('palette').text %>">
+    <img class="hero" src="<%= h.get('image').src %>" alt="<%= b.get('title') %>" height="<%= h.get('image').height %>" width="<%= h.get('image').width %>" />
     <div class="srcpl-hero-content-container">
-        <h1><%= b.displayValue() %></h1>
-        <h2><%= b.getPrimaryCategory() %></h2>
-        <% if (b.get('rating') && !isNaN(b.get('rating'))) { %>
+        <h1><%= b.get('title') %></h1>
+        <h2><%= b.get('primary_category') %></h2>
+        <% if (r.get('averageRating') && !isNaN(r.get('averageRating'))) { %>
         <p class="srpl-rating-review">
-            <a target="_blank" href="<%= b.get('readreviewsurl') %>">
-                <span class="srpl-rating-static f-left srpl-rating-<%= (b.get('rating')*10) %>">
-                    <%= b.get('rating') %> out of 5 stars
+            <a target="_blank" href="<%= r.get('reviewUrl') %>">
+                <span class="srpl-rating-static f-left srpl-rating-<%= (r.get('averageRating')*10) %>">
+                    <%= r.get('averageRating') %> out of 5 stars
                 </span>
-                <% if (b.get('nreview')) {%>
-                (<span class="srpl-review">based on </span><%= b.get('nreview') %> reviews)
-                <% } %>
+                <span class="srpl-review"><%= r.get('reviewCount') %> reviews on <%= r.get('source') %></span>
             </a>
         </p>
-        <% } if (b.address()) {%>
-        <p class="adr"><%= b.address() %></p>
+        <% } if (b.get('address')) {%>
+        <p class="adr"><%= b.get('address') %></p>
         <% } if (b.get('phone')) {%>
         <p class="tel"><%= b.get('phone') %></p>
-        <% } if (b.get('website') && b.get('website')['$']) {%>
+        <% } if (b.get('website') && b.get('website').url) {%>
         <p class="web">
-            <a href="<%= b.get('website')['$'] %>" target="_blank" class="url" title="<%= b.get('websitelabel') || b.get('website')['@label'] %>">
-                <%= b.get('webLabel') %>
+            <a href="<%= b.get('website').url %>" target="_blank" class="url" title="<%= b.get('website').label %>">
+                <%= b.get('website').label %>
             </a>
         </p>
         <% } %>
-        <%= Y.srpl.Business.templates.hero_actions() %>
+        <%= Y.srpl.Business.templates.hero_actions({h:h}) %>
     </div>
 </div>

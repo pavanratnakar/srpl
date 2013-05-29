@@ -1,0 +1,86 @@
+response = {
+    business : {
+        //"id": null,
+        "lat" : "37.37172",
+        "lon" : "-122.03801",
+        "title": "Gary Danko Restaurant",
+        "listing_status" : null,
+        "primary_category": "Fench Cuisine",
+        "categories": {
+            '0': {
+                'id': 1,
+                'url': null,
+                'name': "Continental"
+            },
+            '1' : {
+                'id': 2,
+                'url': null,
+                'name': "American"
+            },
+            '2' : {
+                'id': 3,
+                'url': null,
+                'name': "Seafood"
+            },
+            '2' : {
+                'id': 3,
+                'url': null,
+                'name': "Fench"
+            }
+        },
+        "address": "800 N Point St.., San Francisco, CA 94109",
+        "phone": "(415) 749-2060",
+        "website": {
+            "url": "http://www.garydanki.com",
+            "label": "www.garydanki.com"
+        },
+        "description": "The recipient of the conveted James Beard cooking award, Chef Gary Danko practices his genius at his eponymour, 75-seat Gary Danki restaurant. Reservations usually have to be booked two months in advance. Luxurious appretixers, flvorful entreers, and deserts",
+        "thumbnail": {
+            "thumbnails" : {
+                0: {
+                    "id": null,
+                    "href": null,
+                    "src": null
+                },
+                1: {
+                    "id": null,
+                    "href": null,
+                    "src": null
+                },
+                2: {
+                    "id": null,
+                    "href": null,
+                    "src": null
+                }
+            },
+            "count": null,
+            "add_photo_link": null
+        },
+        "hours": {
+            'status': null,
+            'days': {
+                0: {
+                    'desc' : null
+                },
+                1: {
+                    'desc' : null
+                },
+                2: {
+                    'desc' : null
+                }
+            }
+        },
+        "payment": "Discover, American Express, MasterCard, Diners Club, Visa",
+        "ambiance": "Romantic",
+        "features": "Private Rooms",
+        "attire": "Dressy, Jacket Suggested",
+        "price": "$$$$ ($50 +)",
+        "suggest_an_edit": null
+    },
+    'review' : {
+        'reviewCount' : 100,
+        'averageRating' : 4.5,
+        'reviewUrl' : 'http://test.com',
+        'source' : 'yahoo' 
+    }
+};

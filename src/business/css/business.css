@@ -47,6 +47,10 @@
     padding:                6px 0;
 }
 
+.srpl-detail-container .srpl-container-sub.hide {
+    display:                none;
+}
+
 /************************************************************************
     End of SRPL Business detail Container
 ************************************************************************/

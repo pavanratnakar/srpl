@@ -17,11 +17,9 @@ YUI.add('srpl-business-view', function(Y){
                 return null;
             }
         },
-        business : {
-            valueFn: function(){
-                return null;
-            }
-        },
+        model : Y.srpl.Business.Model,
+        hero : Y.srpl.BusinessHero.Model,
+        review : Y.srpl.BusinessReview.Model,
         map : {
             valueFn: function(){
                 return null;
@@ -40,27 +38,25 @@ YUI.add('srpl-business-view', function(Y){
         reviews: {
             valueFn: function(){
                 return new Y.srpl.Reviews.View();
-            },
-            on : {
-                'resize' : function(){
-                    this._resize();
-                }
-            }
-        },
-        type : {
-            valueFn: function(){
-                return new Y.srpl.Yelp.View();
             }
         }
     };
 
     Y.extend(BusinessView, Y.View, {
         eventListners : [],
-        pluginListners : [],
         // Specify delegated DOM events to attach to the srpl-business container.
         events:{
-            'li .directions':{
-                'click':     '_directionsClick'
+            '.srpl-directions':{
+                'click': '_directionsClick'
+            },
+            '.srpl-more':{
+                'click': '_moreClick'
+            },
+            '.srpl-less':{
+                'click': '_lessClick'
+            },
+            '.srpl-more-details a':{
+                'click': '_moreDetailsClick'
             }
         },
         /**
@@ -69,106 +65,38 @@ YUI.add('srpl-business-view', function(Y){
         * @return {void}
         */
         initializer: function(config){
-            var t = this;
+
+            var t = this,
+                modelListener;
 
             t.eventListeners = [];
-            Y.each(BusinessView.ATTRS, function(spec, attrName){
-                Y.each(['on', 'once', 'after', 'onceAfter'], function(type){
-                    Y.each(spec[type], function(handler, evt){
-                        t.get(attrName)[type](evt, Y.bind(handler,t));
-                    });
-                });
+            Y.YMaps.init({
+                appid: Y.srpl.config('ymaps.appid')
             });
-            if (t.type === 'full') {
-                Y.YMaps.init({
-                    appid: Y.srpl.config('ymaps.appid')
-                });
-            }
-        },
-        /**
-        * @method detachPluginListeners
-        * @return {void}
-        */
-        detachPluginListeners: function(){
-            if (this.pluginListners && this.pluginListners.length>0) {
-                Y.each(this.pluginListners, function(l,i){
-                    l.detach();
-                    l = null;
-                });
-                this.pluginListners = [];
-            }
-        },
-        /**
-        * @method detachPlugins
-        * @return {void}
-        */
-        detachPlugins: function(){
-            this.detachPluginListeners();
-            this.get('container').all('li.srpl-business').each(function(v,i){
-                v.destroy(true);
+            modelListener = t.get('model').on('stateChange', function(){
+                t.render();
             });
-        },
-        /**
-        * @method plugFoursquare
-        * @return {void}
-        */
-        plugFoursquare: function(node){
-            node.plug(Y.srpl.Plugin.Foursquare,{
-                container : node.one('.srpl-foursquare')
-            });
-            node.foursquare.render();
-        },
-        /**
-        * @method plugYelp
-        * @params {node object} node
-        * @return {void}
-        */
-        plugYelp: function(node){
-            node.plug(Y.srpl.Plugin.Yelp,{
-                container : node.one('.srpl-yelp-reviews')
-            });
-            node.yelp.render();
-        },
-        /**
-        * @method reviewsEvents
-        * @params {node object} node
-        * @return {void}
-        */
-        reviewsEvents: function(node){
-            var t = this,
-                reviewsListener;
-
-            reviewsListener = node.reviews.on({
-                'resize':function(e){
-                    t._resize();
-                }
-            });
-            this.pluginListners.push(reviewsListener);
-        },
-        /**
-        * @method plugReviews
-        * @params {node object} node
-        * @return {void}
-        */
-        plugReviews: function(node){
-            node.plug(Y.srpl.Plugin.Reviews,{
-                container : node.one('.srpl-yahoo-reviews')
-            });
-            node.reviews.render();
-            this.reviewsEvents(node);
+            t.eventListeners.push(modelListener);
         },
         /**
         * @method renderFull
         * @return {void}
         */
-        renderFull : function(node,b){
+        renderFull : function(){
             var t = this,
-                headerHeight;
+                headerHeight,
+                node = t.get('container'),
+                b = t.get('model');
 
             if (!node.getContent()) {
                 node.setContent(Y.srpl.Business.templates.full({
-                    b : b
+                    b : b,
+                    h : t.get('hero'),
+                    r : t.get('review')
                 }));
+                if (t.get('container').one('.srpl-detail-container')) {
+                    Y.srpl.util.domTruncator(t.get('container').one('.srpl-detail-container'),'.srpl-container-sub',Y.srpl.config('business.detailLimit'));
+                }
                 headerHeight = t.get('container').one('.srpl-header').get('offsetHeight');
                 node.one('img.hero').setStyle('height',headerHeight);
                 t.set('map',new Y.srpl.Map({
@@ -197,69 +125,37 @@ YUI.add('srpl-business-view', function(Y){
                     t.get('map').draw(marker);
                 });
                 if (b.get('id') !== '11138504') {
-                    t.plugFoursquare(node);
-                    t.plugYelp(node);
-                    t.plugReviews(node);
+                    t.get('foursquare')
+                        .set('container',t.get('container').one('.srpl-foursquare'))
+                        .render();
+                    t.get('yelp')
+                        .set('container',t.get('container').one('.srpl-yelp-reviews'))
+                        .render();
+                    t.get('reviews')
+                        .set('container',t.get('container').one('.srpl-yahoo-reviews'))
+                        .render();
                 }
                 node.setStyle('height',node.get('offsetHeight')+8);
             }
         },
         /**
-        * @method renderMini
+        * @method render
         * @return {void}
         */
-        renderMini : function(node,b){
-            var t = this,
-                headerHeight;
-
-            if (!node.getContent()) {
-                node.setContent(Y.srpl.Business.templates.mini({
-                    b : b
-                }));
-                t.plugFoursquare(node);
-                t.plugYelp(node);
-                t.plugReviews(node);
-            }
-        },
-        /**
-        * @method render
-        * @return {boolean}
-        */
         render: function(){
-            // HACK FOR NEW
-            this.get('business').setAttrs({
-                'herophoto':'http://www.beaurivage.com/images/restaurants/restaurants_fine_jia.jpg'
-            });
-            var b = this.get('business'),
-                node = this.get('container').one('#srpl-'+b.get('id'));
-
             this.get('container').addClass(this.get('type'));
-            if (this.get('type') === 'full') {
-                this.renderFull(node,b);
-            } else if (this.get('type') === 'mini') {
-                this.renderMini(node,b);
-            }
+            this.renderFull();
         },
         /**
         * @method clear
         * @return {void}
         */
-        clear: function(){
-            this.detachPlugins();
-        },
-        /**
-        * @method resizeRequired
-        * @return {void}
-        */
-        resizeRequired : function(){
-            this.fire('resize');
-        },
+        clear: function(){},
         /**
         * @method destructor
         * @return {void}
         */
         destructor: function(){
-            this.detachPlugins();
             this.eventListeners = Y.srpl.util._destructor(this.eventListeners);
         },
 
@@ -278,8 +174,50 @@ YUI.add('srpl-business-view', function(Y){
         * @return {void}
         */
         _directionsClick: function(e){
-            var b = this.get('business');
-            window.open('http://maps.yahoo.com/directions/?lat='+b.getLatitude()+'&lon='+b.getLongitude()+'&zoom='+Y.srpl.config('ymaps.zoomThresholdLevel')+'&d='+encodeURIComponent(b.getNamedAddress()),Y.srpl.config('linking.target'))
+            var b = this.get('model');
+            window.open('http://maps.yahoo.com/directions/?lat='+b.get('lat')+'&lon='+b.get('lon')+'&zoom='+Y.srpl.config('ymaps.zoomThresholdLevel')+'&d='+encodeURIComponent(b.getNamedAddress()),Y.srpl.config('linking.target'));
+        },
+        /**
+        * @method _moreClick
+        * @params {e} e
+        * @return {void}
+        */
+        _moreClick: function(e){
+            var target = e.currentTarget;
+
+            e.preventDefault();
+            target.hide().previous().hide();
+            target.next().show();
+            this.fire('resize');
+        },
+        /**
+        * @method _moreClick
+        * @params {e} e
+        * @return {void}
+        */
+        _lessClick: function(e){
+            var target = e.currentTarget;
+
+            e.preventDefault();
+            target.get('parentNode').hide().previous().show().previous().show();
+            this.fire('resize');
+        },
+        /**
+        * @method _moreDetailsClick
+        * @params {e} e
+        * @return {void}
+        */
+        _moreDetailsClick: function(e){
+            var target = e.currentTarget;
+
+            e.preventDefault();
+            Y.srpl.util.domTruncator(
+                target.ancestor('.srpl-detail-container'),
+                '.srpl-container-sub',
+                Y.srpl.config('business.detailLimit'),
+                target.get('parentNode').hasClass('srpl-view-more') ? 'more' : 'hide'
+            );
+            this.fire('resize');
         }
     });
 
@@ -289,10 +227,12 @@ YUI.add('srpl-business-view', function(Y){
     requires:[
         'view',
         'srpl-business-model',
+        'srpl-business-hero-model',
+        'srpl-business-review-model',
         'srpl-business-templates',
-        'srpl-foursquare-plugin',
-        'srpl-yelp-plugin',
-        'srpl-reviews-plugin',
+        'srpl-foursquare-view',
+        'srpl-yelp-view',
+        'srpl-reviews-view',
         'srpl-util',
         'srpl-config',
         'srpl-map-view',
