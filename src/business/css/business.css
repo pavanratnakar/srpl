@@ -47,7 +47,8 @@
     padding:                6px 0;
 }
 
-.srpl-detail-container .srpl-container-sub.hide {
+.srpl-detail-container .srpl-container-sub.hide,
+.srpl-detail-container .srpl-day-hours.hide  {
     display:                none;
 }
 

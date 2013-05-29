@@ -57,6 +57,9 @@ YUI.add('srpl-business-view', function(Y){
             },
             '.srpl-more-details a':{
                 'click': '_moreDetailsClick'
+            },
+            '.srpl-see-all':{
+                'click': '_seeAllClick'
             }
         },
         /**
@@ -96,6 +99,9 @@ YUI.add('srpl-business-view', function(Y){
                 }));
                 if (t.get('container').one('.srpl-detail-container')) {
                     Y.srpl.util.domTruncator(t.get('container').one('.srpl-detail-container'),'.srpl-container-sub',Y.srpl.config('business.detailLimit'));
+                }
+                if (t.get('container').one('.srpl-day-hours-container')) {
+                    Y.srpl.util.seeAll(t.get('container').one('.srpl-day-hours-container'),'.srpl-day-hours',Y.srpl.config('business.hourLimit'));
                 }
                 headerHeight = t.get('container').one('.srpl-header').get('offsetHeight');
                 node.one('img.hero').setStyle('height',headerHeight);
@@ -162,13 +168,6 @@ YUI.add('srpl-business-view', function(Y){
         // -- Event Handlers -------------------------------------------------------
 
         /**
-        * @method _resize
-        * @return {void}
-        */
-        _resize : function(){
-            this.fire('resize');
-        },
-        /**
         * @method _directionsClick
         * @params {e} e
         * @return {void}
@@ -217,6 +216,19 @@ YUI.add('srpl-business-view', function(Y){
                 Y.srpl.config('business.detailLimit'),
                 target.get('parentNode').hasClass('srpl-view-more') ? 'more' : 'hide'
             );
+            this.fire('resize');
+        },
+        /**
+        * @method _seeAllClick
+        * @params {e} e
+        * @return {void}
+        */
+        _seeAllClick: function(e){
+            var target = e.currentTarget;
+
+            e.preventDefault();
+            target.get('parentNode').all('p').removeClass('hide');
+            target.hide();
             this.fire('resize');
         }
     });

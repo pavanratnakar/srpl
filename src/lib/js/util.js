@@ -254,6 +254,18 @@ YUI.add('srpl-util',function(Y){
             }
         },
         /**
+        * TODO : Needs translation
+        * @method seeAll
+        * @return {string}
+        */
+        seeAll : function(container,el,limit){
+            if (container.all(el).size() > limit) {
+                //container.one('.srpl-more-details').show();
+                container.all(el).slice(limit).toggleClass('hide');
+                //container.one('.srpl-more-details').toggleClass('srpl-view-more');
+            }
+        },
+        /**
         * @method _destructor
         * @return {array}
         */
